@@ -4,15 +4,27 @@ from graphical_objects.line import Line
 from graphical_objects.wireframe import Wireframe
 
 class GraphicalObjectFactory:
+
+    object_classes = {
+                "Point": Point,
+                "Line": Line,
+                "Wireframe": Wireframe,
+            }
+
     @staticmethod
     def create_object(object_type: str, name: str, coordinates: tuple):
-        object_classes = {
-            "Point": Point,
-            "Line": Line,
-            "Wireframe": Wireframe,
-        }
-        
-        if object_type in object_classes:
-            return object_classes[object_type](name, coordinates)
+
+        if (isinstance(object_type, AbstractGraphicalObject)):
+            GraphicalObjectFactory.duplicate_object(object_type, name)
+    
+        if object_type in GraphicalObjectFactory.object_classes:
+            obj_class = GraphicalObjectFactory.object_classes[object_type]
+            return obj_class(name, coordinates)
         
         raise ValueError(f"tipo de objeto desconhecido: {object_type}")
+    
+    @staticmethod
+    def duplicate_object(obj: AbstractGraphicalObject, name: str):
+        new_obj = obj.clone()
+        new_obj.update_name(name)
+        return new_obj

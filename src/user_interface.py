@@ -8,7 +8,9 @@ class UserInterface(tk.Tk):
         self.title("Interactive Graphics System")
         self.geometry(c.APPLICATION_SIZE)
         
-        self.control_panel = tk.Frame(self, width=600, height=600, bg="lightgray")
+        self.configure(bg=c.UI_BACKGROUND_COLOR)
+        
+        self.control_panel = tk.Frame(self, width=600, height=600, bg="gray")
         self.control_panel.pack(side="left", fill="y")
 
         self.setup()
@@ -21,7 +23,7 @@ class UserInterface(tk.Tk):
         
     def set_viewport(self, viewport):
         self.viewport = viewport
-        self.viewport.pack(side="right", fill="both", expand=True)
+        self.viewport.place(relx=1.0, rely=0.0, anchor="ne")
         self.viewport.draw()
 
     def create_buttons(self):

@@ -4,12 +4,13 @@ from viewport import Viewport
 from graphical_objects.graphical_object_factory import GraphicalObjectFactory
 
 import utils as ut
+import constants as c
 
 
 class GraphicalSystem:
     def __init__(self):
         self._ui = UserInterface(self)
-        self._viewport = Viewport(self._ui, width=600, height=600, bg="white")
+        self._viewport = Viewport(self._ui, width=c.VIEWPORT_WIDTH, height=c.VIEWPORT_HEIGHT, bg=c.VIEWPORT_BG_COLOR)
         self._ui.set_viewport(self._viewport)
         self._unique_id = 0
     
@@ -33,4 +34,4 @@ class GraphicalSystem:
         self._viewport.display_file.add_object(obj)
 
         #atualiza viewport
-        self._viewport.draw()
+        self._viewport.update()
