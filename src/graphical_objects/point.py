@@ -1,7 +1,7 @@
 from graphical_objects.abstract_graphical_object import AbstractGraphicalObject
 
 class Point(AbstractGraphicalObject):
-    def __init__(self, name, coordinates: tuple[str, str]):
+    def __init__(self, name, coordinates: list[tuple[str, str]]):
         super().__init__(name)
         self.coordinates = coordinates
         print(f"Point {name} created at {coordinates}")
@@ -20,7 +20,7 @@ class Point(AbstractGraphicalObject):
         return self
     
     def draw(self, canvas):
-        viewport_x, viewport_y = canvas.world_to_viewport(*self.coordinates)
+        viewport_x, viewport_y = canvas.world_to_viewport(*self.coordinates[0])
         radius = 2
         canvas.create_oval(
             viewport_x - radius, viewport_y - radius,
