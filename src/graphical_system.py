@@ -27,7 +27,7 @@ class GraphicalSystem:
             return
 
         #instancia objeto utilizando factory
-        obj = GraphicalObjectFactory.create_object(obj_type, str(self._unique_id), coords)
+        obj = GraphicalObjectFactory.create_object(obj_type, "objeto", self._unique_id, coords)
         self._unique_id += 1
 
         #adiciona objeto à display file
@@ -35,3 +35,27 @@ class GraphicalSystem:
 
         #atualiza viewport
         self._viewport.update()
+
+        #exibe mensagem de sucesso e adiciona objeto à lista de referências da UI
+        self.reference_object(obj)
+
+    def translate_object(self, obj_id: str, shift: str):
+        try:
+            shift = ut.parse_coordinates(shift)
+        except ValueError as e:
+            self._ui.display_error(str(e))
+            return
+
+        obj = self._viewport.display_file.get_object_by_id(obj_id)
+        
+        if obj is None:
+            self._ui.display_error(f"Object with id {obj_id} not found")
+            return
+
+        new_cords = ut.translate(obj.get_vertices(), shift)
+        obj.modify(new_cords)
+
+        self._viewport.update()
+    
+    def reference_object(self, obj):
+        self._ui.display_info(f"Object {obj.get_type()} created with id {obj.get_id()}")

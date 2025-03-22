@@ -3,8 +3,9 @@ import copy as cp
 
 class AbstractGraphicalObject(ABC):
 
-    def __init__(self, name):
+    def __init__(self, name, id):
         self._name = name
+        self._id = id
 
     @abstractmethod
     def draw(self, canvas):
@@ -31,6 +32,12 @@ class AbstractGraphicalObject(ABC):
 
     def get_name (self):
         return self._name
+    
+    def update_id(self, new_id):
+        self._id = new_id
+
+    def get_id(self):
+        return self._id
     
     def clone(self):
         return cp.copy.deepcopy(self)

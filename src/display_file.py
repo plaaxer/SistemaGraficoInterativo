@@ -14,6 +14,13 @@ class DisplayFile:
     def get_objects(self):
 
         return self.objects
+    
+    def get_object_by_id(self, obj_id):
+
+        for obj in self.objects:
+            if obj.get_id() == obj_id:
+                return obj
+        return
 
     def clear(self):
 
