@@ -110,31 +110,31 @@ class UserInterface(tk.Tk):
         self.log_message(f"Info: {message}")
 
     def move_up(self):
-        self.viewport.translate_window(0, 10)
+        self.viewport.translate_window(0, -10)
         self.viewport.update()
         self.log_message("Viewport translated 10 units up")
     
     def move_down(self):
-        self.viewport.translate_window(0, -10)
+        self.viewport.translate_window(0, 10)
         self.viewport.update()
         self.log_message("Viewport translated 10 units down")
     
     def move_left(self):
-        self.viewport.translate_window(-10, 0)
+        self.viewport.translate_window(10, 0)
         self.viewport.update()
         self.log_message("Viewport translated 10 units left")
     
     def move_right(self):
-        self.viewport.translate_window(10, 0)
+        self.viewport.translate_window(-10, 0)
         self.viewport.update()
         self.log_message("Viewport translated 10 units right")
     
     def zoom_in(self):
-        self.viewport.zoom(1.1)
+        self.viewport.zoom(0.9)
         self.viewport.update()
         self.log_message("Viewport zoomed in")
     
     def zoom_out(self):
-        self.viewport.zoom(0.9)
+        self.viewport.zoom(1.1)
         self.viewport.update()
         self.log_message("Viewport zoomed out")
