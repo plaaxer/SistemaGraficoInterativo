@@ -41,6 +41,9 @@ class AbstractGraphicalObject(ABC):
     
     def clone(self):
         return cp.copy.deepcopy(self)
+    
+    def get_info(self):
+        return f"[{self._id}] {self._name} ({self.get_type()})"
 
     def __repr__(self):
         return f"{self.__class__.__name__}({self._name})"

@@ -1,5 +1,6 @@
 import tkinter as tk
 import constants as c
+from object_manager_ui import ObjectManagerUI
 
 class UserInterface(tk.Tk):
     def __init__(self, app):
@@ -10,12 +11,9 @@ class UserInterface(tk.Tk):
         
         self.configure(bg=c.UI_BACKGROUND_COLOR)
         
-        self.control_panel = tk.Frame(self, width=c.APPLICATION_WIDTH-c.VIEWPORT_WIDTH, height=c.APPLICATION_HEIGHT, bg="gray")
-        self.control_panel.pack(side=tk.LEFT)
-        self.control_panel.pack_propagate(False)
-
-        self.logger_box = tk.Text(self.control_panel, height=15, width=60, state=tk.DISABLED)
-        self.logger_box.pack(pady=10)
+        self.command_panel = tk.Frame(self, width=c.APPLICATION_WIDTH-c.VIEWPORT_WIDTH, height=c.APPLICATION_HEIGHT, bg="gray")
+        self.command_panel.pack(side=tk.LEFT)
+        self.command_panel.pack_propagate(False)
 
         self.setup()
     
@@ -23,6 +21,10 @@ class UserInterface(tk.Tk):
         self.mainloop()
 
     def setup(self):
+
+        self.logger_box = tk.Text(self.command_panel, height=15, width=60, state=tk.DISABLED)
+        self.logger_box.pack(pady=10)
+
         self.create_buttons()
         
     def set_viewport(self, viewport):
@@ -31,14 +33,26 @@ class UserInterface(tk.Tk):
         self.viewport.place(relx=1.0, rely=0.0, anchor="ne")
         self.viewport.draw()
 
+        self.object_manager = ObjectManagerUI(self.command_panel, self.viewport.display_file, self._app)
+        self.object_manager.pack(pady=10)
+
     def create_buttons(self):
-        tk.Button(self.control_panel, command=self.create_object_creator_popup, text="Create Object").pack(pady=20)
-        tk.Button(self.control_panel, command=self.move_up, text="Move up").pack(pady=10)
-        tk.Button(self.control_panel, command=self.move_down, text="Move down").pack(pady=10)
-        tk.Button(self.control_panel, command=self.move_left, text="Move left").pack(pady=10)
-        tk.Button(self.control_panel, command=self.move_right, text="Move right").pack(pady=10)
-        tk.Button(self.control_panel, command=self.zoom_in, text="Zoom in").pack(pady=10)
-        tk.Button(self.control_panel, command=self.zoom_out, text="Zoom out").pack(pady=10)
+
+        tk.Button(self.command_panel, command=self.create_object_creator_popup, text="Create Object").pack(pady=20)
+
+        move_frame = tk.Frame(self.command_panel, bg="gray")
+        move_frame.pack(pady=10)
+        
+        tk.Button(move_frame, command=self.move_up, text="Move up").grid(row=0, column=1, padx=5, pady=5)
+        tk.Button(move_frame, command=self.move_left, text="Move left").grid(row=1, column=0, padx=5, pady=5)
+        tk.Button(move_frame, command=self.move_right, text="Move right").grid(row=1, column=2, padx=5, pady=5)
+        tk.Button(move_frame, command=self.move_down, text="Move down").grid(row=2, column=1, padx=5, pady=5)
+        
+        zoom_frame = tk.Frame(self.command_panel, bg="gray")
+        zoom_frame.pack(pady=10)
+        
+        tk.Button(zoom_frame, command=self.zoom_in, text="Zoom in").pack(side=tk.LEFT, padx=5)
+        tk.Button(zoom_frame, command=self.zoom_out, text="Zoom out").pack(side=tk.LEFT, padx=5)
     
     def create_object_creator_popup(self):
 
@@ -110,31 +124,37 @@ class UserInterface(tk.Tk):
         self.log_message(f"Info: {message}")
 
     def move_up(self):
-        self.viewport.translate_window(0, -10)
+        step = 20
+        self.viewport.translate_window(0, -step)
         self.viewport.update()
-        self.log_message("Viewport translated 10 units up")
+        self.log_message(f"Moved up by {step} pixels")
     
     def move_down(self):
-        self.viewport.translate_window(0, 10)
+        step = 20
+        self.viewport.translate_window(0, step)
         self.viewport.update()
-        self.log_message("Viewport translated 10 units down")
+        self.log_message(f"Moved down by {step} pixels")
     
     def move_left(self):
-        self.viewport.translate_window(10, 0)
+        step = 20
+        self.viewport.translate_window(-step, 0)
         self.viewport.update()
-        self.log_message("Viewport translated 10 units left")
+        self.log_message(f"Moved left by {step} pixels")
     
     def move_right(self):
-        self.viewport.translate_window(-10, 0)
+        step = 20
+        self.viewport.translate_window(step, 0)
         self.viewport.update()
-        self.log_message("Viewport translated 10 units right")
+        self.log_message(f"Moved right by {step} pixels")
     
     def zoom_in(self):
-        self.viewport.zoom(0.9)
+        factor = 0.85
+        self.viewport.zoom(factor)
         self.viewport.update()
-        self.log_message("Viewport zoomed in")
+        self.log_message("Zoomed in (factor: 0.85)")
     
     def zoom_out(self):
-        self.viewport.zoom(1.1)
+        factor = 1.15
+        self.viewport.zoom(factor)
         self.viewport.update()
-        self.log_message("Viewport zoomed out")
+        self.log_message("Zoomed out (factor: 1.15)")

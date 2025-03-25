@@ -21,7 +21,7 @@ class GraphicalSystem:
 
         #processa coordenadas
         try:
-            coords = ut.parse_coordinates(coords)
+            coords = ut.parse_coordinates(coords, obj_type)
         except ValueError as e:
             self._ui.display_error(str(e))
             return
@@ -40,13 +40,15 @@ class GraphicalSystem:
         self.reference_object(obj)
 
     def translate_object(self, obj_id: str, shift: str):
+        # todo: parse coordinates precisa de dois argumentos
+
         try:
             shift = ut.parse_coordinates(shift)
         except ValueError as e:
             self._ui.display_error(str(e))
             return
 
-        obj = self._viewport.display_file.get_object_by_id(obj_id)
+        obj = self._viewport.display_file.get_object_by_id(int(obj_id))
         
         if obj is None:
             self._ui.display_error(f"Object with id {obj_id} not found")
@@ -57,5 +59,21 @@ class GraphicalSystem:
 
         self._viewport.update()
     
-    def reference_object(self, obj):
+    def delete_object(self, obj_id: str):
+        obj = self._viewport.display_file.get_object_by_id(int(obj_id))
+        
+        if obj is None:
+            self._ui.display_error(f"Object with id {obj_id} not found")
+            return
+        
+        self._viewport.display_file.remove_object(obj)
+        self._viewport.update()
+
+        self.reference_object(obj, "deleted")
+    
+    def reference_object(self, obj, message=None):
+        if message == "deleted":
+            self._ui.display_info(f"Object {obj.get_type()} with id {obj.get_id()} deleted")
+            return
+
         self._ui.display_info(f"Object {obj.get_type()} created with id {obj.get_id()}")

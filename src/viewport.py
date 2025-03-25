@@ -13,6 +13,7 @@ class Viewport(Canvas):
     def draw(self):
         for obj in self.display_file.get_objects():
             obj.draw(self)
+        self.display_file.notify()
     
     def window_to_viewport(self, x, y):
         
