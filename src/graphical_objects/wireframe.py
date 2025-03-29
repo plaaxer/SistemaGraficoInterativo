@@ -8,7 +8,9 @@ class Wireframe(AbstractGraphicalObject):
         print(f"Wireframe {name} created at {coordinates}")
 
     def get_object_center(self):
-        return self.coordinates
+        x = sum([x for x, _ in self.coordinates]) / len(self.coordinates)
+        y = sum([y for _, y in self.coordinates]) / len(self.coordinates)
+        return (x, y)
     
     def get_vertices(self):
         return [self.coordinates]
