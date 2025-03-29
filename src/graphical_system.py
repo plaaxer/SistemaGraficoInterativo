@@ -17,7 +17,13 @@ class GraphicalSystem:
     def run(self):
         self._ui.run()
         
-    def create_object(self, obj_type: str, coords: str):
+    def create_object(self, obj_type: str, coords: str, name: str, color: str):
+
+        # valida atributos
+        if name == "" or name is None:
+            name = "Objeto"
+        if color == "" or color is None:
+            color = c.DEFAULT_OBJECT_COLOR
 
         #processa coordenadas
         try:
@@ -27,7 +33,7 @@ class GraphicalSystem:
             return
 
         #instancia objeto utilizando factory
-        obj = GraphicalObjectFactory.create_object(obj_type, "objeto", self._unique_id, coords)
+        obj = GraphicalObjectFactory.create_object(obj_type, name, self._unique_id, coords, color)
         self._unique_id += 1
 
         #adiciona objeto à display file

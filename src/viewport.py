@@ -35,8 +35,8 @@ class Viewport(Canvas):
     
     def translate_window(self, x, y):
         # lembrando que é o inverso
-        self.window_bounds[0] = (self.window_bounds[0][0] - x, self.window_bounds[0][1] - y)
-        self.window_bounds[1] = (self.window_bounds[1][0] - x, self.window_bounds[1][1] - y)
+        self.window_bounds[0] = (self.window_bounds[0][0] + x, self.window_bounds[0][1] - y)
+        self.window_bounds[1] = (self.window_bounds[1][0] + x, self.window_bounds[1][1] - y)
     
     def zoom(self, factor):
 

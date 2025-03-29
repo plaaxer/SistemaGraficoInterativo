@@ -76,10 +76,25 @@ class UserInterface(tk.Tk):
         coord_entry = tk.Entry(popup, width=50)
         coord_entry.pack(pady=5)
 
+        color_name_frame = tk.Frame(popup)
+        color_name_frame.pack(pady=5, anchor="center", padx=10)
+
+        tk.Label(color_name_frame, text="Color (optional):").grid(row=0, column=0, padx=5)
+        color_entry = tk.Entry(color_name_frame, width=15)
+        color_entry.grid(row=0, column=1, padx=5)
+
+        tk.Label(color_name_frame, text="Name (optional):").grid(row=0, column=2, padx=5)
+        name_entry = tk.Entry(color_name_frame, width=15)
+        name_entry.grid(row=0, column=3, padx=5)
+
+
+
         def create_object():
             obj_type = obj_type_var.get()
             coords = coord_entry.get()
-            self._app.create_object(obj_type, coords)
+            color = color_entry.get()
+            name = name_entry.get()
+            self._app.create_object(obj_type, coords, name, color)
             popup.destroy()
 
         tk.Button(popup, text="Create", command=create_object).pack(pady=10)

@@ -20,8 +20,8 @@ VIEWPORT_BG_COLOR = "lightgray"
 VIEWPORT_WIDTH = 1034
 VIEWPORT_HEIGHT = 582
 
-#provavelmente trocaremos a viewport para 1024x576 futuramente
+DEFAULT_OBJECT_COLOR = "black"
 
-POPUP_WIDTH = 400
-POPUP_HEIGHT = 200
+POPUP_WIDTH = 640
+POPUP_HEIGHT = 360
 POPUP_Y_OFFSET = 50 #o quão para cima a janela popup deve ser criada em relação ao centro da janela principal
