@@ -2,7 +2,7 @@ from typing import List, Tuple
 import constants as c
 import numpy as np
 
-def parse_coordinates(coordinates: str, type: str) -> List[Tuple[float, float]]:
+def parse_coordinates(coordinates: str, type: str = None) -> List[Tuple[float, float]]:
     if not coordinates.strip():
         raise ValueError("Favor inserir coordenadas")
     
@@ -31,9 +31,6 @@ def parse_coordinates(coordinates: str, type: str) -> List[Tuple[float, float]]:
         
         # por enquanto, vamos arredondar as coordenadas para inteiros
         x, y = map(round, (x, y))
-        
-        if not (c.WINDOW_BOUNDS[0][0] <= x <= c.WINDOW_BOUNDS[1][0] and c.WINDOW_BOUNDS[0][1] <= y <= c.WINDOW_BOUNDS[1][1]):
-            raise ValueError(f"Coordenadas ({x}, {y}) fora dos limites permitidos: {c.WINDOW_BOUNDS}")
         
         print("Final coordinates: (", x, ", ", y, ")")
 

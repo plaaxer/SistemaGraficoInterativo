@@ -11,7 +11,7 @@ class Point(AbstractGraphicalObject):
         return self.coordinates
     
     def get_vertices(self):
-        return [self.coordinates]
+        return self.coordinates
     
     def get_type(self):
         return "Point"

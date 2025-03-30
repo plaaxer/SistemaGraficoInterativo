@@ -33,7 +33,7 @@ class UserInterface(tk.Tk):
         self.viewport.place(relx=1.0, rely=0.0, anchor="ne")
         self.viewport.draw()
 
-        self.object_manager = ObjectManagerUI(self.command_panel, self.viewport.display_file, self._app)
+        self.object_manager = ObjectManagerUI(self.command_panel, self.viewport.display_file, self._app, self)
         self.object_manager.pack(pady=10)
 
     def create_buttons(self):
