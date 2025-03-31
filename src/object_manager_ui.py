@@ -66,8 +66,10 @@ class ObjectManagerUI(tk.Frame):
         
         translate_radio = tk.Radiobutton(popup, text="Translate", variable=mode_var, value="translate")
         escalate_radio = tk.Radiobutton(popup, text="Escalate", variable=mode_var, value="escalate")
+        rotate_radio = tk.Radiobutton(popup, text="Rotate", variable=mode_var, value="rotate")
         translate_radio.pack()
         escalate_radio.pack()
+        rotate_radio.pack()
 
         input_frame = tk.Frame(popup)
         input_frame.pack(pady=10)
@@ -81,11 +83,37 @@ class ObjectManagerUI(tk.Frame):
                 coord_entry = tk.Entry(input_frame, width=50)
                 coord_entry.pack()
                 input_frame.coord_entry = coord_entry
-            else:
+            elif mode_var.get() == "escalate":
                 tk.Label(input_frame, text="Enter Scaling Factor:").pack()
                 factor_entry = tk.Entry(input_frame, width=10)
                 factor_entry.pack()
                 input_frame.factor_entry = factor_entry
+            else:
+                tk.Label(input_frame, text="Enter Angle:").pack()
+                angle_entry = tk.Entry(input_frame, width=10)
+                angle_entry.pack()
+                input_frame.angle_entry = angle_entry
+                tk.Label(input_frame, text="Select Rotation Point:").pack(pady=5)
+                rotation_point_var = tk.StringVar(value="center")
+
+                center_radio = tk.Radiobutton(input_frame, text="Object Center", variable=rotation_point_var, value="center")
+                custom_radio = tk.Radiobutton(input_frame, text="Custom Point", variable=rotation_point_var, value="custom")
+                center_radio.pack()
+                custom_radio.pack()
+
+                def update_rotation_point_fields():
+                    for widget in input_frame.winfo_children():
+                        if isinstance(widget, tk.Entry) and widget != angle_entry:
+                            widget.destroy()
+                    
+                    if rotation_point_var.get() == "custom":
+                        tk.Label(input_frame, text="Enter Rotation Point (x, y):").pack()
+                        point_entry = tk.Entry(input_frame, width=50)
+                        point_entry.pack()
+                        input_frame.point_entry = point_entry
+
+                rotation_point_var.trace_add("write", lambda *args: update_rotation_point_fields())
+                update_rotation_point_fields()
         
         mode_var.trace_add("write", lambda *args: update_input_fields())
         update_input_fields()
@@ -95,10 +123,18 @@ class ObjectManagerUI(tk.Frame):
                 coords = getattr(input_frame, "coord_entry", None)
                 if coords:
                     self._app.modify_object(obj_id, "translate", coords.get())
-            else:
+            elif mode_var.get() == "escalate":
                 factor = getattr(input_frame, "factor_entry", None)
                 if factor:
                     self._app.modify_object(obj_id, "escalate", factor.get())
+            else:
+                angle = getattr(input_frame, "angle_entry", None)
+                if angle:
+                    point = getattr(input_frame, "point_entry", None)
+                    if point:
+                        self._app.modify_object(obj_id, "rotate", angle.get(), point.get())
+                    else:
+                        self._app.modify_object(obj_id, "rotate", angle.get())
             popup.destroy()
         
         tk.Button(popup, text="Apply", command=modify_object).pack(pady=10)

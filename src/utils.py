@@ -30,7 +30,7 @@ def parse_coordinates(coordinates: str, type: str = None) -> List[Tuple[float, f
             raise ValueError("Coordenadas devem ser números válidos")
         
         # por enquanto, vamos arredondar as coordenadas para inteiros
-        x, y = map(round, (x, y))
+        #x, y = map(round, (x, y))
         
         print("Final coordinates: (", x, ", ", y, ")")
 
@@ -48,21 +48,27 @@ def parse_coordinates(coordinates: str, type: str = None) -> List[Tuple[float, f
     return parsed_coords
 
 def homogeneo(vertices: List[Tuple[int, int]]) -> List[Tuple[int, int, int]]:
-    return np.array([(*x, 1) for x in vertices])
+    print(vertices)
+    return np.array([(x[0], x[1], 1) for x in vertices]).T
 
 def translate(vertices: List[Tuple[int, int]], shift: Tuple[int, int]) -> List[Tuple[int, int]]:
-    return [(x + shift[0], y + shift[1]) for x, y in vertices]
+    matrix1 = homogeneo(vertices)
+    translation_mtx = [[1, 0, shift[0]], [0, 1, shift[1]], [0, 0, 1]]
+    result = np.dot(translation_mtx, matrix1)
+    return [(x, y) for x, y, _ in result.T]
 
 def escalate(vertices: List[Tuple[int, int]], factor: Tuple[float, float]) -> List[Tuple[int, int]]:
     matrix1 = homogeneo(vertices)
-    matrix2 = [[factor[0], 0, 0], [0, factor[1], 0], [0, 0, 1]]
-    result = np.dot(matrix1, matrix2)
-    return [(x, y) for x, y, _ in result]
+    escalation_mtx = [[factor[0], 0, 0], [0, factor[1], 0], [0, 0, 1]]
+    result = np.dot(escalation_mtx, matrix1)
+    return [(x, y) for x, y, _ in result.T]
 
 def rotate(vertices: List[Tuple[int, int]], angle: float) -> List[Tuple[int, int]]:
     rad = np.radians(angle)
-    # implementar o resto
-    return 
+    matrix1 = homogeneo(vertices)
+    rotation_mtx = [[np.cos(rad), -np.sin(rad), 0], [np.sin(rad), np.cos(rad), 0], [0, 0, 1]]
+    result = np.dot(rotation_mtx, matrix1)
+    return [(x, y) for x, y, _ in result.T]
 
 def get_id_from_info(info: str) -> str:
     return info.split()[0][1:-1]

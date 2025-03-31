@@ -13,3 +13,11 @@
 - parsing de coordenadas agora leva em conta o tipo do objeto
 
 - algumas outras coisas
+
+commit 31-03-2025:
+
+- implementadas funções de translação, escalonamento e rotação plenamente funcionais
+
+- removida limitação de somente inteiros do parsing para permitir fatores de escalonamento menores que 1 para diminuir objetos
+
+- corrigido problema de atualização de coordenadas de polígonos que aninhava listas
