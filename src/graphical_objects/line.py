@@ -20,10 +20,8 @@ class Line(AbstractGraphicalObject):
     
     def modify(self, new_coords):
         self.coordinates = new_coords
-        # todo: update scn vertices
         return self
     
-    # scn refers to the normalized coordinates of the scene
     def draw(self, canvas):
         print("coordinates", self.coordinates)
         print("scn vertices", self._scn_vertices)

@@ -15,6 +15,7 @@ class Viewport(Canvas):
     def draw(self):
         for obj in self.display_file.get_objects():
             obj.draw(self)
+        # self.draw_y_direction()
         self.display_file.notify()
     
     def window_to_viewport(self, x, y):
@@ -40,48 +41,26 @@ class Viewport(Canvas):
         self.update()
     
     def rotate_window(self, angle: int):
-        # Step 1: Update the Viewport's SCN for all objects
-        print("---Rotating window---")
-        
-        # 2. Rotate window bounds
-        # Compute the center of the window
-        x_min, y_min = self.window_bounds[0]
-        x_max, y_max = self.window_bounds[1]
+        print("---Rotating window (VUP)---")
 
-        # Compute center
-        cx = (x_min + x_max) / 2
-        cy = (y_min + y_max) / 2
-
-        # Convert the rotation angle from degrees to radians
         rad = np.radians(angle)
-        cos_a, sin_a = np.cos(rad), np.sin(rad)
+        cos_a = np.cos(rad)
+        sin_a = np.sin(rad)
 
-        # Create rotation matrix (2D)
-        rotation_matrix = np.array([
+        # rotaciona VUP
+        vx, vy = self.vup
+        rotated_vup = np.dot([
             [cos_a, -sin_a],
-            [sin_a, cos_a]
-        ])
+            [sin_a, cos_a]], 
+            [vx, vy])
 
-        # Rotate the window bounds
-        window_centered = [
-            (x - cx, y - cy) for x, y in [self.window_bounds[0], self.window_bounds[1]]
-        ]
+        # só normaliza por causa do erro de precisão
+        norm = np.linalg.norm(rotated_vup)
+        if norm != 0:
+            self.vup = (rotated_vup[0] / norm, rotated_vup[1] / norm)
 
-        rotated = [
-            np.dot(rotation_matrix, [x, y]) for x, y in window_centered
-        ]
-
-        # Update window bounds after rotation
-        rotated_x_min, rotated_y_min = rotated[0]
-        rotated_x_max, rotated_y_max = rotated[1]
-
-        self.window_bounds[0] = (rotated_x_min + cx, rotated_y_min + cy)
-        self.window_bounds[1] = (rotated_x_max + cx, rotated_y_max + cy)
-
-        # Step 3: Update all objects' SCN vertices after rotation
         self.update()
 
-    
     def zoom(self, factor):
 
         self.window_bounds[0] = (self.window_bounds[0][0] * factor, self.window_bounds[0][1] * factor)
@@ -91,45 +70,61 @@ class Viewport(Canvas):
 
     def clear(self):
         self.delete("all")
+
+    # apenas para debug
+    def draw_y_direction(self, length=50, color="red"):
+        # Get current viewport size
+        viewport_width = self.winfo_width()
+        viewport_height = self.winfo_height()
+        cx = viewport_width / 2
+        cy = viewport_height / 2
+
+        vx, vy = self.vup
+        end_x = cx + vx * length
+        end_y = cy - vy * length
+
+        self.create_line(cx, cy, end_x, end_y, fill=color, width=2, arrow="last")
+
+
     
     def update_specific_scn(self, obj):
             print("---UPDATING SCN---")
-            # Extract window bounds from the viewport
+
+            # localização da window
             x_min, y_min = self.window_bounds[0]
             x_max, y_max = self.window_bounds[1]
 
-            # 1. Compute the center of the window
+            # computa o centro da window
             cx = (x_min + x_max) / 2
             cy = (y_min + y_max) / 2
 
-            # 2. View Up Vector angle with Y-axis
+            # faz a translação do mundo (nesse caso, 1 objeto) para o centro da window
+            translated = [(x - cx, y - cy) for x, y in obj.get_vertices()]
+
+            # o ângulo de rotação é o ângulo entre a VUP e o eixo Y do mundo
             vx, vy = self.vup
-            angle = -np.arctan2(vx, vy)  # angle to rotate world so vup aligns with Y
+            angle = -np.arctan2(vx, vy)
 
             cos_a, sin_a = np.cos(angle), np.sin(angle)
 
-            # 3. Window dimensions for normalization
+            # tamanho da window
             window_width = x_max - x_min
             window_height = y_max - y_min
 
-            # 4. Translate world so window center is at the origin
-            translated = [(x - cx, y - cy) for x, y in obj.get_vertices()]
-
-            # 5. Rotate world by -θ to align VUP with Y axis
+            # rotaciona o mundo por -θ para alinhar o VUP com o eixo Y
             rotated = [
                 (x * cos_a - y * sin_a, x * sin_a + y * cos_a)
                 for x, y in translated
             ]
 
-            # 6. Normalize into SCN (0 to 1)
+            # normaliza de volta para scn
             scn = [
                 ((x + window_width / 2) / window_width,
                 (y + window_height / 2) / window_height)
                 for x, y in rotated
             ]
 
-            # 7. Update normalized coordinates in the viewport (instead of object)
-            # Now updating the viewport's internal object list or the object itself
+            # faz o update das coordenadas normalizadas do objeto
             obj.set_scn_vertices(scn)
     
     def update_all_scn(self):

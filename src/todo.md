@@ -21,3 +21,11 @@ commit 31-03-2025:
 - removida limitação de somente inteiros do parsing para permitir fatores de escalonamento menores que 1 para diminuir objetos
 
 - corrigido problema de atualização de coordenadas de polígonos que aninhava listas
+
+commit 06-04-2025:
+
+- implementado sistema de coordenadas normalizado com centro no canto inferior esquerdo (vetores vão de (0, 0) a (1, 1))
+- função update_specific_scn() é a responsável por 1) atualizar as coordenadas normalizadas de cada um dos objetos e 2) rotacionar os objetos de acordo com a inclinação da window
+- rotacionamento da window no botão Rotacionar
+- atualmente as coordenadas normalizadas de todos os objetos são atualizadas sempre que há modificações ou adição de algum. Deixar para otimizar utilizando clipping futuramente
+- criado botões para importar e exportar objetos, além de estruturar a lógica por trás (FileLoader é responsável por carregar e armazenar arquivos, OBJHandler é responsável por fazer o processamento de transformar um objeto em .obj e vice-versa - o que ainda não feito)

@@ -2,6 +2,8 @@
 from user_interface import UserInterface
 from viewport import Viewport
 from graphical_objects.graphical_object_factory import GraphicalObjectFactory
+from file_loader import FileLoader
+from graphical_objects.objhandler import ObjHandler
 
 import utils as ut
 import constants as c
@@ -10,6 +12,7 @@ import constants as c
 class GraphicalSystem:
     def __init__(self):
         self._ui = UserInterface(self)
+        self._file_loader = FileLoader(self)
         self._viewport = Viewport(self._ui, width=c.VIEWPORT_WIDTH, height=c.VIEWPORT_HEIGHT, bg=c.VIEWPORT_BG_COLOR)
         self._ui.set_viewport(self._viewport)
         self._unique_id = 0
@@ -157,3 +160,16 @@ class GraphicalSystem:
             self._ui.display_info(f"Object {obj.get_type()} with id {obj.get_id()} translated")
         else:
             self._ui.display_info(f"Object {obj.get_type()} created with id {obj.get_id()}")
+    
+    def import_object(self):
+        file_path = self._file_loader.open_file_dialog()
+        if file_path:
+            try:
+                obj_as_string = ObjHandler.load_object(file_path)
+                ObjHandler.process_obj_data(obj_as_string)
+            except Exception as e:
+                self._ui.display_error(f"Error loading object: {str(e)}")
+
+    def export_object(self):
+        pass
+        #todo

@@ -18,10 +18,11 @@ class Point(AbstractGraphicalObject):
     
     def modify(self, new_coords):
         self.coordinates = new_coords
+        # todo: update scn vertices
         return self
     
     def draw(self, canvas):
-        viewport_x, viewport_y = canvas.window_to_viewport(*self.coordinates[0])
+        viewport_x, viewport_y = canvas.window_to_viewport(*self._scn_vertices[0])
         radius = 2
         canvas.create_oval(
             viewport_x - radius, viewport_y - radius,

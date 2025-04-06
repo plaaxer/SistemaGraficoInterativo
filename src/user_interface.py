@@ -62,6 +62,13 @@ class UserInterface(tk.Tk):
         
         tk.Button(zoom_frame, command=self.zoom_in, text="Zoom in").pack(side=tk.LEFT, padx=5)
         tk.Button(zoom_frame, command=self.zoom_out, text="Zoom out").pack(side=tk.LEFT, padx=5)
+
+        import_button = tk.Button(self, text="Import OBJ", command=self._app.import_object)
+        export_button = tk.Button(self, text="Export OBJ", command=self._app.export_object)
+
+        import_button.place(relx=1.0, rely=1.0, anchor="se", x=-140, y=-10)
+        export_button.place(relx=1.0, rely=1.0, anchor="se", x=-10, y=-10)
+
     
     def create_object_creator_popup(self):
 
@@ -148,8 +155,11 @@ class UserInterface(tk.Tk):
         self.log_message(f"Info: {message}")
 
     def move_up(self):
-        self._app.create_object("Line", "((0, 0), (1920, 0))", "debugWorldCenterX", "red")
-        self._app.create_object("Line", "((0, 0), (0, 1080))", "debugWorldCenterY", "blue")
+        self._app.create_object("Line", "((0, 0), (1920, 0))", "debugWorldAxisX", "red")
+        self._app.create_object("Line", "((0, 0), (0, 1080))", "debugWorldAxisY", "blue")
+        self._app.create_object("Line", "(480, 270), (480, 810)", "debugWorldCenterX", "red")
+        self._app.create_object("Line", "(480, 270), (1440, 270)", "debugWorldCenterY", "blue")
+        self._app.create_object("Wireframe", "(50, 50), (1500, 50), (1500, 800)", "debugWireframe", "green")
         step = 20
         self.viewport.translate_window(0, -step)
         self.viewport.update()
@@ -186,7 +196,5 @@ class UserInterface(tk.Tk):
         self.log_message("Zoomed out (factor: 1.15)")
     
     def rotate_window(self):
-        #REMOVER
-        #self._app.create_object("Line", "(480, 540), (960, 540)", "debugging", "blue")
-        self.viewport.rotate_window(30)
-        self.log_message("Rotated window 30 degrees clockwise")
+        self.viewport.rotate_window(-30)
+        self.log_message("Rotated window 30 degrees counterclockwise")

@@ -20,19 +20,20 @@ class Wireframe(AbstractGraphicalObject):
     
     def modify(self, new_coords):
         self.coordinates = new_coords
+        # todo: update scn vertices
         return self
     
     def draw(self, canvas):
         for i in range(len(self.coordinates) - 1):
-            viewport_x0, viewport_y0 = canvas.window_to_viewport(*self.coordinates[i])
-            viewport_x1, viewport_y1 = canvas.window_to_viewport(*self.coordinates[i + 1])
+            viewport_x0, viewport_y0 = canvas.window_to_viewport(*self._scn_vertices[i])
+            viewport_x1, viewport_y1 = canvas.window_to_viewport(*self._scn_vertices[i + 1])
             canvas.create_line(
                 viewport_x0, viewport_y0,
                 viewport_x1, viewport_y1,
                 fill=self._color
             )
-        viewport_x0, viewport_y0 = canvas.window_to_viewport(*self.coordinates[-1])
-        viewport_x1, viewport_y1 = canvas.window_to_viewport(*self.coordinates[0])
+        viewport_x0, viewport_y0 = canvas.window_to_viewport(*self._scn_vertices[-1])
+        viewport_x1, viewport_y1 = canvas.window_to_viewport(*self._scn_vertices[0])
         canvas.create_line(
             viewport_x0, viewport_y0,
             viewport_x1, viewport_y1,
