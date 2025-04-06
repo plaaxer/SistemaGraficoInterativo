@@ -19,7 +19,6 @@ def parse_coordinates(coordinates: str, type: str = None) -> List[Tuple[float, f
    
     print("Pairs: ", pairs)
     for pair in pairs:
-        print("Pair: ", pair)
         values = pair.split(",")
         if len(values) != 2:
             raise ValueError("Formato inválido de coordenadas")
@@ -32,7 +31,6 @@ def parse_coordinates(coordinates: str, type: str = None) -> List[Tuple[float, f
         # por enquanto, vamos arredondar as coordenadas para inteiros
         #x, y = map(round, (x, y))
         
-        print("Final coordinates: (", x, ", ", y, ")")
 
         parsed_coords.append((x, y))
 

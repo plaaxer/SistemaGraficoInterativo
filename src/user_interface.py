@@ -1,6 +1,8 @@
 import tkinter as tk
 import constants as c
 from object_manager_ui import ObjectManagerUI
+from file_loader import FileLoader
+from PIL import Image, ImageTk
 
 class UserInterface(tk.Tk):
     def __init__(self, app):
@@ -39,6 +41,13 @@ class UserInterface(tk.Tk):
     def create_buttons(self):
 
         tk.Button(self.command_panel, command=self.create_object_creator_popup, text="Create Object").pack(pady=20)
+
+        rotate_button = tk.Button(self.command_panel, command=self.rotate_window, text="Rotate")
+        # rotate_photo = FileLoader.load_image(c.ROTATE_ICON_PATH)
+        # rotate_button.config(image=rotate_photo)
+        # rotate_button.image = rotate_photo
+        # rotate_button.config(text="Rotate window")
+        rotate_button.pack(pady=10)
 
         move_frame = tk.Frame(self.command_panel, bg="gray")
         move_frame.pack(pady=10)
@@ -139,6 +148,8 @@ class UserInterface(tk.Tk):
         self.log_message(f"Info: {message}")
 
     def move_up(self):
+        self._app.create_object("Line", "((0, 0), (1920, 0))", "debugWorldCenterX", "red")
+        self._app.create_object("Line", "((0, 0), (0, 1080))", "debugWorldCenterY", "blue")
         step = 20
         self.viewport.translate_window(0, -step)
         self.viewport.update()
@@ -173,3 +184,9 @@ class UserInterface(tk.Tk):
         self.viewport.zoom(factor)
         self.viewport.update()
         self.log_message("Zoomed out (factor: 1.15)")
+    
+    def rotate_window(self):
+        #REMOVER
+        #self._app.create_object("Line", "(480, 540), (960, 540)", "debugging", "blue")
+        self.viewport.rotate_window(30)
+        self.log_message("Rotated window 30 degrees clockwise")

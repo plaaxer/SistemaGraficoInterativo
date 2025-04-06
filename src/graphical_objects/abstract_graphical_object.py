@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 import copy as cp
+import numpy as np
 
 class AbstractGraphicalObject(ABC):
 
@@ -48,3 +49,10 @@ class AbstractGraphicalObject(ABC):
 
     def __repr__(self):
         return f"{self.__class__.__name__}({self._name})"
+    
+    def set_scn_vertices(self, scn_vertices):
+        self._scn_vertices = [(float(x), float(y)) for x, y in scn_vertices]
+
+    def get_scn_vertices(self):
+        return self._scn_vertices
+    

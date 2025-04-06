@@ -5,6 +5,8 @@ POSSIBLE_OBJECTS = ["Point", "Line", "Wireframe"]
 
 WINDOW_BOUNDS = [(0, 0), (1920, 1080)]
 
+VIEW_UP_VECTOR = (0, 1)
+
 
 # ui constants
 
@@ -25,3 +27,8 @@ DEFAULT_OBJECT_COLOR = "black"
 POPUP_WIDTH = 640
 POPUP_HEIGHT = 360
 POPUP_Y_OFFSET = 50 #o quão para cima a janela popup deve ser criada em relação ao centro da janela principal
+
+
+# paths
+
+ROTATE_ICON_PATH = "assets/rotate.png"
