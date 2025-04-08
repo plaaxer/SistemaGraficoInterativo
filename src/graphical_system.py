@@ -165,11 +165,25 @@ class GraphicalSystem:
         file_path = self._file_loader.open_file_dialog()
         if file_path:
             try:
-                obj_as_string = ObjHandler.load_object(file_path)
-                ObjHandler.process_obj_data(obj_as_string)
+                # carrega string
+                obj_as_string = ObjHandler.load_obj(file_path)
+                if obj_as_string is None:
+                    self._ui.display_error("Error loading object: File not found or empty")
+                    return
+                # processa string e cria objetos
+                ObjHandler.process_obj_data(obj_as_string, self)
             except Exception as e:
                 self._ui.display_error(f"Error loading object: {str(e)}")
 
-    def export_object(self):
-        pass
-        #todo
+    def export_object(self, obj_id: str):
+        file_path = self._file_loader.save_file_dialog()
+        if file_path:
+            try:
+                if self._viewport.display_file.get_object_by_id(int(obj_id)) is None:
+                    self._ui.display_error(f"Object with id {obj_id} not found")
+                    return
+                # salva o objeto em um arquivo .obj
+                ObjHandler.save_obj(file_path, self._viewport.display_file.get_object_by_id(int(obj_id)))
+                self._ui.display_info(f"Object saved to {file_path}")
+            except Exception as e:
+                self._ui.display_error(f"Error saving object: {str(e)}")

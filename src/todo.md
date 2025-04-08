@@ -29,3 +29,13 @@ commit 06-04-2025:
 - rotacionamento da window no botão Rotacionar
 - atualmente as coordenadas normalizadas de todos os objetos são atualizadas sempre que há modificações ou adição de algum. Deixar para otimizar utilizando clipping futuramente
 - criado botões para importar e exportar objetos, além de estruturar a lógica por trás (FileLoader é responsável por carregar e armazenar arquivos, OBJHandler é responsável por fazer o processamento de transformar um objeto em .obj e vice-versa - o que ainda não feito)
+
+commit 07-04-2025
+
+- completado as conversões de .obj para importação e exportação
+
+- adição de lógica para cores e nomes em .obj
+
+- obs: .obj ainda em 2d, e ainda são necessárias algumas verificações de erro
+
+- mudanças urgentes no front-end dos popups (bem feios)

@@ -24,6 +24,10 @@ class AbstractGraphicalObject(ABC):
     @abstractmethod
     def get_type(self):
         pass
+
+    def get_color(self):
+        return self._color
+
     
     @abstractmethod
     def modify(self, new_coords):

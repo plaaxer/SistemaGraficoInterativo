@@ -18,7 +18,6 @@ class Point(AbstractGraphicalObject):
     
     def modify(self, new_coords):
         self.coordinates = new_coords
-        # todo: update scn vertices
         return self
     
     def draw(self, canvas):

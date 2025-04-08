@@ -64,7 +64,7 @@ class UserInterface(tk.Tk):
         tk.Button(zoom_frame, command=self.zoom_out, text="Zoom out").pack(side=tk.LEFT, padx=5)
 
         import_button = tk.Button(self, text="Import OBJ", command=self._app.import_object)
-        export_button = tk.Button(self, text="Export OBJ", command=self._app.export_object)
+        export_button = tk.Button(self, text="Export OBJ", command=self.export)
 
         import_button.place(relx=1.0, rely=1.0, anchor="se", x=-140, y=-10)
         export_button.place(relx=1.0, rely=1.0, anchor="se", x=-10, y=-10)
@@ -155,6 +155,7 @@ class UserInterface(tk.Tk):
         self.log_message(f"Info: {message}")
 
     def move_up(self):
+        #debugging purposes
         self._app.create_object("Line", "((0, 0), (1920, 0))", "debugWorldAxisX", "red")
         self._app.create_object("Line", "((0, 0), (0, 1080))", "debugWorldAxisY", "blue")
         self._app.create_object("Line", "(480, 270), (480, 810)", "debugWorldCenterX", "red")
@@ -198,3 +199,45 @@ class UserInterface(tk.Tk):
     def rotate_window(self):
         self.viewport.rotate_window(-30)
         self.log_message("Rotated window 30 degrees counterclockwise")
+
+    def export(self):
+        popup = tk.Toplevel(self)
+        popup.title("Export Object")
+        popup.geometry(f"{c.POPUP_WIDTH}x{c.POPUP_HEIGHT}")
+
+        selected_object_id = self.object_manager.get_object_id()
+
+        self.update_idletasks()
+        x = self.winfo_x() + (self.winfo_width() // 2) - (c.POPUP_WIDTH // 2)
+        y = self.winfo_y() + (self.winfo_height() // 2) - (c.POPUP_HEIGHT // 2)
+        popup.geometry(f"+{x}+{y-c.POPUP_Y_OFFSET}")
+
+        # se tem algum objeto selecionado em object_manager, perguntar se quer exportar
+        if selected_object_id is not None:
+            tk.Label(popup, text=f"Are you sure you want to export object ID {selected_object_id}?").pack(pady=10)
+            
+            def on_confirm():
+                self._app.export_object(str(selected_object_id))
+                popup.destroy()
+
+            def on_cancel():
+                popup.destroy()
+
+            tk.Button(popup, text="Yes", command=on_confirm).pack(side=tk.LEFT, padx=20, pady=10)
+            tk.Button(popup, text="Cancel", command=on_cancel).pack(side=tk.RIGHT, padx=20, pady=10)
+
+        # se não tem objeto selecionado, pedir o ID do objeto a ser exportado
+        else:
+            tk.Label(popup, text="Enter the ID of the object to export:").pack(pady=10)
+            id_entry = tk.Entry(popup)
+            id_entry.pack(pady=5)
+
+            def on_confirm():
+                obj_id = id_entry.get()
+                if not obj_id.isdigit():
+                    self.display_error("Invalid ID. Please enter a numeric value.")
+                    return
+                self._app.export_object(obj_id)
+                popup.destroy()
+
+            tk.Button(popup, text="Export", command=on_confirm).pack(pady=10)
