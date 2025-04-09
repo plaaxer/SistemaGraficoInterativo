@@ -16,6 +16,7 @@ class Viewport(Canvas):
         for obj in self.display_file.get_objects():
             obj.draw(self)
         # self.draw_y_direction()
+        self.draw_window_axes()
         self.display_file.notify()
     
     def window_to_viewport(self, x, y):
@@ -33,13 +34,39 @@ class Viewport(Canvas):
 
         return viewport_x, viewport_y
     
-    def translate_window(self, x, y):
-        # lembrando que é o inverso
-        self.window_bounds[0] = (self.window_bounds[0][0] + x, self.window_bounds[0][1] - y)
-        self.window_bounds[1] = (self.window_bounds[1][0] + x, self.window_bounds[1][1] - y)
+    def translate_window(self, dwx, dwy):
+        """
+        Translada a janela no sistema da janela (dwx, dwy).
+        Ex: dwx = -10 move 10 unidades 'à esquerda' da viewport.
+        """
+        
+        # # lembrando que é o inverso
+        # self.window_bounds[0] = (self.window_bounds[0][0] + dwx, self.window_bounds[0][1] - dwy)
+        # self.window_bounds[1] = (self.window_bounds[1][0] + dwx, self.window_bounds[1][1] - dwy)
+
+        # self.update()
+
+        # VUP: eixo Y da janela
+        vx, vy = self.vup
+
+        angle = -np.arctan2(vx, vy)
+
+        dmx = dwx * np.cos(angle) - dwy * np.sin(angle)
+        dmy = dwx * np.sin(angle) + dwy * np.cos(angle)
+
+        # atualiza as coordenadas da janela
+        x_min, y_min = self.window_bounds[0]
+        x_max, y_max = self.window_bounds[1]
+        x_min += dmx
+        y_min += dmy
+        x_max += dmx
+        y_max += dmy
+        self.window_bounds[0] = (x_min, y_min)
+        self.window_bounds[1] = (x_max, y_max)
 
         self.update()
-    
+
+
     def rotate_window(self, angle: int):
         print("---Rotating window (VUP)---")
 
@@ -85,6 +112,17 @@ class Viewport(Canvas):
 
         self.create_line(cx, cy, end_x, end_y, fill=color, width=2, arrow="last")
 
+    def draw_window_axes(self, length=50):
+        cx = self.winfo_width() / 2
+        cy = self.winfo_height() / 2
+
+        # Eixo Y (VUP)
+        vx, vy = self.vup
+        self.create_line(cx, cy, cx + vx * length, cy - vy * length, fill="red", arrow="last")  # Y
+
+        # Eixo X (perpendicular a VUP)
+        ux, uy = vy, -vx
+        self.create_line(cx, cy, cx + ux * length, cy - uy * length, fill="blue", arrow="last")  # X
 
     
     def update_specific_scn(self, obj):
@@ -128,7 +166,6 @@ class Viewport(Canvas):
             obj.set_scn_vertices(scn)
     
     def update_all_scn(self):
-        # todo: otimizar pra n recalcular todos os objetos
         for obj in self.display_file.get_objects():
             self.update_specific_scn(obj)
 

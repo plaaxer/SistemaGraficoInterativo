@@ -156,19 +156,19 @@ class UserInterface(tk.Tk):
 
     def move_up(self):
         #debugging purposes
-        self._app.create_object("Line", "((0, 0), (1920, 0))", "debugWorldAxisX", "red")
-        self._app.create_object("Line", "((0, 0), (0, 1080))", "debugWorldAxisY", "blue")
-        self._app.create_object("Line", "(480, 270), (480, 810)", "debugWorldCenterX", "red")
-        self._app.create_object("Line", "(480, 270), (1440, 270)", "debugWorldCenterY", "blue")
-        self._app.create_object("Wireframe", "(50, 50), (1500, 50), (1500, 800)", "debugWireframe", "green")
+        # self._app.create_object("Line", "((0, 0), (1920, 0))", "debugWorldAxisX", "red")
+        # self._app.create_object("Line", "((0, 0), (0, 1080))", "debugWorldAxisY", "blue")
+        # self._app.create_object("Line", "(480, 270), (480, 810)", "debugWorldCenterX", "red")
+        # self._app.create_object("Line", "(480, 270), (1440, 270)", "debugWorldCenterY", "blue")
+        # self._app.create_object("Wireframe", "(50, 50), (1500, 50), (1500, 800)", "debugWireframe", "green")
         step = 20
-        self.viewport.translate_window(0, -step)
+        self.viewport.translate_window(0, step)
         self.viewport.update()
         self.log_message(f"Moved up by {step} pixels")
     
     def move_down(self):
         step = 20
-        self.viewport.translate_window(0, step)
+        self.viewport.translate_window(0, -step)
         self.viewport.update()
         self.log_message(f"Moved down by {step} pixels")
     
