@@ -11,10 +11,10 @@ class ObjHandler:
                 content = file.read()
             return content
         except FileNotFoundError:
-            print(f"File not found: {file_path}")
+            #print(f"File not found: {file_path}")
             return None
         except Exception as e:
-            print(f"Error loading .obj file: {e}")
+            #print(f"Error loading .obj file: {e}")
             return None
 
     @staticmethod
@@ -108,7 +108,7 @@ class ObjHandler:
             with open(file_path, 'w') as file:
                 file.write(obj_data)
 
-            print(f"Successfully saved to {file_path}")
+            #print(f"Successfully saved to {file_path}")
         except Exception as e:
             print(f"Error saving .obj file: {e}")
 

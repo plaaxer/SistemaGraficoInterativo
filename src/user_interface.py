@@ -155,12 +155,6 @@ class UserInterface(tk.Tk):
         self.log_message(f"Info: {message}")
 
     def move_up(self):
-        #debugging purposes
-        # self._app.create_object("Line", "((0, 0), (1920, 0))", "debugWorldAxisX", "red")
-        # self._app.create_object("Line", "((0, 0), (0, 1080))", "debugWorldAxisY", "blue")
-        # self._app.create_object("Line", "(480, 270), (480, 810)", "debugWorldCenterX", "red")
-        # self._app.create_object("Line", "(480, 270), (1440, 270)", "debugWorldCenterY", "blue")
-        # self._app.create_object("Wireframe", "(50, 50), (1500, 50), (1500, 800)", "debugWireframe", "green")
         step = 20
         self.viewport.translate_window(0, step)
         self.viewport.update()
@@ -185,10 +179,16 @@ class UserInterface(tk.Tk):
         self.log_message(f"Moved right by {step} pixels")
     
     def zoom_in(self):
-        factor = 0.85
-        self.viewport.zoom(factor)
-        self.viewport.update()
-        self.log_message("Zoomed in (factor: 0.85)")
+        #debugging purposes
+        self._app.create_object("Line", "((1, 1), (1919, 1))", "debugWorldAxisX", "red")
+        self._app.create_object("Line", "((1, 1), (1, 1079))", "debugWorldAxisY", "blue")
+        self._app.create_object("Line", "(480, 270), (480, 810)", "debugWorldCenterX", "red")
+        self._app.create_object("Line", "(480, 270), (1440, 270)", "debugWorldCenterY", "blue")
+        self._app.create_object("Wireframe", "(50, 50), (1500, 50), (1500, 800)", "debugWireframe", "green")
+        # factor = 0.85
+        # self.viewport.zoom(factor)
+        # self.viewport.update()
+        # self.log_message("Zoomed in (factor: 0.85)")
     
     def zoom_out(self):
         factor = 1.15
@@ -197,7 +197,7 @@ class UserInterface(tk.Tk):
         self.log_message("Zoomed out (factor: 1.15)")
     
     def rotate_window(self):
-        self.viewport.rotate_window(-30)
+        self.viewport.rotate_window(-45)
         self.log_message("Rotated window 30 degrees counterclockwise")
 
     def export(self):

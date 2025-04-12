@@ -14,10 +14,10 @@ class FileLoader:
             tk_image = ImageTk.PhotoImage(image)
             return tk_image
         except FileNotFoundError:
-            print(f"File not found: {file_path}")
+            #print(f"File not found: {file_path}")
             return None
         except Exception as e:
-            print(f"Error loading image: {e}")
+            #print(f"Error loading image: {e}")
             return None
 
     @staticmethod

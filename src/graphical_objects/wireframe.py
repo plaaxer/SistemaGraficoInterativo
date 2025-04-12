@@ -5,7 +5,7 @@ class Wireframe(AbstractGraphicalObject):
     def __init__(self, name, id, coordinates: list[tuple[str, str]], color: str):
         super().__init__(name, id, color)
         self.coordinates = coordinates
-        print(f"Wireframe {name} created at {coordinates}")
+        #print(f"Wireframe {name} created at {coordinates}")
 
     def get_object_center(self):
         x = sum([x for x, _ in self.coordinates]) / len(self.coordinates)

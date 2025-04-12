@@ -7,7 +7,7 @@ def parse_coordinates(coordinates: str, type: str = None) -> List[Tuple[float, f
         raise ValueError("Favor inserir coordenadas")
     
     coordinates = coordinates.replace(" ", "")
-    print(coordinates.startswith("("))
+    #print(coordinates.startswith("("))
     if not (coordinates.startswith("(") and coordinates.endswith(")")):
         raise ValueError("Formato inválido de coordenadas")
     
@@ -17,7 +17,7 @@ def parse_coordinates(coordinates: str, type: str = None) -> List[Tuple[float, f
 
     parsed_coords = []
    
-    print("Pairs: ", pairs)
+    #print("Pairs: ", pairs)
     for pair in pairs:
         values = pair.split(",")
         if len(values) != 2:
@@ -46,7 +46,7 @@ def parse_coordinates(coordinates: str, type: str = None) -> List[Tuple[float, f
     return parsed_coords
 
 def homogeneo(vertices: List[Tuple[int, int]]) -> List[Tuple[int, int, int]]:
-    print(vertices)
+    #print(vertices)
     return np.array([(x[0], x[1], 1) for x in vertices]).T
 
 def translate(vertices: List[Tuple[int, int]], shift: Tuple[int, int]) -> List[Tuple[int, int]]:

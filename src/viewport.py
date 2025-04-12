@@ -12,11 +12,13 @@ class Viewport(Canvas):
         self.window_bounds = c.WINDOW_BOUNDS
         self.vup = c.VIEW_UP_VECTOR
 
+        self.window_angle = 0
+
     def draw(self):
         for obj in self.display_file.get_objects():
             obj.draw(self)
         # self.draw_y_direction()
-        self.draw_window_axes()
+        #self.draw_window_axes()
         self.display_file.notify()
     
     def window_to_viewport(self, x, y):
@@ -35,58 +37,100 @@ class Viewport(Canvas):
         return viewport_x, viewport_y
     
     def translate_window(self, dwx, dwy):
-        """
-        Translada a janela no sistema da janela (dwx, dwy).
-        Ex: dwx = -10 move 10 unidades 'à esquerda' da viewport.
-        """
-        
-        # # lembrando que é o inverso
-        # self.window_bounds[0] = (self.window_bounds[0][0] + dwx, self.window_bounds[0][1] - dwy)
-        # self.window_bounds[1] = (self.window_bounds[1][0] + dwx, self.window_bounds[1][1] - dwy)
 
-        # self.update()
+            print("Requested translation:", dwx, dwy)
 
-        # VUP: eixo Y da janela
-        vx, vy = self.vup
+            # VUP: eixo Y da janela
+            vx, vy = self.vup
 
-        angle = -np.arctan2(vx, vy)
+            angle = -np.arctan2(vx, vy)
 
-        dmx = dwx * np.cos(angle) - dwy * np.sin(angle)
-        dmy = dwx * np.sin(angle) + dwy * np.cos(angle)
+            print("Current angle:", np.degrees(angle))
 
-        # atualiza as coordenadas da janela
-        x_min, y_min = self.window_bounds[0]
-        x_max, y_max = self.window_bounds[1]
-        x_min += dmx
-        y_min += dmy
-        x_max += dmx
-        y_max += dmy
-        self.window_bounds[0] = (x_min, y_min)
-        self.window_bounds[1] = (x_max, y_max)
+            print("Sin(angle):", np.sin(angle), "Cos(angle):", np.cos(angle))
 
-        self.update()
+            world_dx = dwx * np.cos(angle) + dwy * np.sin(angle)
+
+            world_dy = -dwx * np.sin(angle) + dwy * np.cos(angle)
+
+            print("World dx:", world_dx, "World dy:", world_dy)
+
+            # atualiza as coordenadas da janela
+            x_min, y_min = self.window_bounds[0]
+            x_max, y_max = self.window_bounds[1]
+            x_min += world_dx
+            y_min += world_dy
+            x_max += world_dx
+            y_max += world_dy
+            self.window_bounds[0] = (x_min, y_min)
+            self.window_bounds[1] = (x_max, y_max)
+
+            print("New window bounds:", self.window_bounds)
+
+            self.update()
 
 
     def rotate_window(self, angle: int):
-        print("---Rotating window (VUP)---")
+        # Increment rotation
+        self.window_angle = (self.window_angle + angle) % 360
 
+        # Recalculate bounds based on angle, center, width, height
+        #self._update_rotated_window_bounds()
+
+        # Rotate VUP too (optional, only if you use it for orientation)
         rad = np.radians(angle)
         cos_a = np.cos(rad)
         sin_a = np.sin(rad)
-
-        # rotaciona VUP
         vx, vy = self.vup
-        rotated_vup = np.dot([
-            [cos_a, -sin_a],
-            [sin_a, cos_a]], 
-            [vx, vy])
-
-        # só normaliza por causa do erro de precisão
+        rotated_vup = (vx * cos_a - vy * sin_a, vx * sin_a + vy * cos_a)
         norm = np.linalg.norm(rotated_vup)
         if norm != 0:
             self.vup = (rotated_vup[0] / norm, rotated_vup[1] / norm)
 
         self.update()
+
+
+    def _update_rotated_window_bounds(self):
+        angle_rad = np.radians(self.window_angle)
+
+        print("Current window angle:", self.window_angle)
+
+        # localização da window
+        x_min, y_min = self.window_bounds[0]
+        x_max, y_max = self.window_bounds[1]
+
+        # computa o centro da window
+        cx = (x_min + x_max) / 2
+        cy = (y_min + y_max) / 2
+
+        w = self.winfo_width()
+        h = self.winfo_height()
+
+        # Rectangle corners centered at origin
+        half_w = w / 2
+        half_h = h / 2
+        corners = [
+            (-half_w, -half_h),
+            (-half_w, half_h),
+            (half_w, -half_h),
+            (half_w, half_h)
+        ]
+
+        # Rotate corners
+        cos_a = np.cos(angle_rad)
+        sin_a = np.sin(angle_rad)
+        rotated = [
+            (
+                x * cos_a - y * sin_a + cx,
+                x * sin_a + y * cos_a + cy
+            ) for x, y in corners
+        ]
+
+        xs, ys = zip(*rotated)
+        self.window_bounds = [(min(xs), min(ys)), (max(xs), max(ys))]
+
+        print("New window bounds after rotation:", self.window_bounds)
+
 
     def zoom(self, factor):
 
@@ -126,7 +170,7 @@ class Viewport(Canvas):
 
     
     def update_specific_scn(self, obj):
-            print("---UPDATING SCN---")
+            #print("---UPDATING SCN---")
 
             # localização da window
             x_min, y_min = self.window_bounds[0]
@@ -170,7 +214,7 @@ class Viewport(Canvas):
             self.update_specific_scn(obj)
 
     def update(self):
-        print("display file objects", self.display_file.get_objects())
+        #print("display file objects", self.display_file.get_objects())
         self.update_all_scn()
         self.clear()
         self.draw()
