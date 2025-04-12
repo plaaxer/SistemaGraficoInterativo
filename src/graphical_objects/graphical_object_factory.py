@@ -13,14 +13,14 @@ class GraphicalObjectFactory:
             }
 
     @staticmethod
-    def create_object(object_type: str, name: str, object_id: int, coordinates: tuple, color: str):
+    def create_object(object_type: str, name: str, object_id: int, coordinates: tuple, color: str, fill: bool):
 
         if (isinstance(object_type, AbstractGraphicalObject)):
             GraphicalObjectFactory.duplicate_object(object_type, name, object_id)
     
         if object_type in GraphicalObjectFactory.object_classes:
             obj_class = GraphicalObjectFactory.object_classes[object_type]
-            return obj_class(name, object_id, coordinates, color)
+            return obj_class(name, object_id, coordinates, color, fill)
         
         raise ValueError(f"tipo de objeto desconhecido: {object_type}")
     

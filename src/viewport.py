@@ -23,7 +23,7 @@ class Viewport(Canvas):
     
     def window_to_viewport(self, x, y):
         
-        # dimensão da viewport
+        # dimensão da viewport - atualmente o mesmo tamanho do canvas
         self.viewport_width = self.winfo_width()
         self.viewport_height = self.winfo_height()
 
@@ -71,13 +71,11 @@ class Viewport(Canvas):
 
 
     def rotate_window(self, angle: int):
-        # Increment rotation
+
+        # apenas para referência no futuro
         self.window_angle = (self.window_angle + angle) % 360
 
-        # Recalculate bounds based on angle, center, width, height
-        #self._update_rotated_window_bounds()
-
-        # Rotate VUP too (optional, only if you use it for orientation)
+        # rotaciona o vup
         rad = np.radians(angle)
         cos_a = np.cos(rad)
         sin_a = np.sin(rad)
@@ -88,49 +86,6 @@ class Viewport(Canvas):
             self.vup = (rotated_vup[0] / norm, rotated_vup[1] / norm)
 
         self.update()
-
-
-    def _update_rotated_window_bounds(self):
-        angle_rad = np.radians(self.window_angle)
-
-        print("Current window angle:", self.window_angle)
-
-        # localização da window
-        x_min, y_min = self.window_bounds[0]
-        x_max, y_max = self.window_bounds[1]
-
-        # computa o centro da window
-        cx = (x_min + x_max) / 2
-        cy = (y_min + y_max) / 2
-
-        w = self.winfo_width()
-        h = self.winfo_height()
-
-        # Rectangle corners centered at origin
-        half_w = w / 2
-        half_h = h / 2
-        corners = [
-            (-half_w, -half_h),
-            (-half_w, half_h),
-            (half_w, -half_h),
-            (half_w, half_h)
-        ]
-
-        # Rotate corners
-        cos_a = np.cos(angle_rad)
-        sin_a = np.sin(angle_rad)
-        rotated = [
-            (
-                x * cos_a - y * sin_a + cx,
-                x * sin_a + y * cos_a + cy
-            ) for x, y in corners
-        ]
-
-        xs, ys = zip(*rotated)
-        self.window_bounds = [(min(xs), min(ys)), (max(xs), max(ys))]
-
-        print("New window bounds after rotation:", self.window_bounds)
-
 
     def zoom(self, factor):
 
@@ -144,7 +99,7 @@ class Viewport(Canvas):
 
     # apenas para debug
     def draw_y_direction(self, length=50, color="red"):
-        # Get current viewport size
+
         viewport_width = self.winfo_width()
         viewport_height = self.winfo_height()
         cx = viewport_width / 2

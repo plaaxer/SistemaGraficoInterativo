@@ -40,7 +40,7 @@ class UserInterface(tk.Tk):
 
     def create_buttons(self):
 
-        tk.Button(self.command_panel, command=self.create_object_creator_popup, text="Create Object").pack(pady=20)
+        tk.Button(self.command_panel, command=self.object_creator_popup, text="Create Object").pack(pady=20)
 
         rotate_button = tk.Button(self.command_panel, command=self.rotate_window, text="Rotate")
         # rotate_photo = FileLoader.load_image(c.ROTATE_ICON_PATH)
@@ -70,16 +70,15 @@ class UserInterface(tk.Tk):
         export_button.place(relx=1.0, rely=1.0, anchor="se", x=-10, y=-10)
 
     
-    def create_object_creator_popup(self):
-
+    def object_creator_popup(self):
         popup = tk.Toplevel(self)
         popup.title("Create Object")
         popup.geometry(f"{c.POPUP_WIDTH}x{c.POPUP_HEIGHT}")
 
         self.update_idletasks()
         x = self.winfo_x() + (self.winfo_width() // 2) - (c.POPUP_WIDTH // 2)
-        y = self.winfo_y() + (self.winfo_height() // 2) - (c.POPUP_HEIGHT// 2)
-        popup.geometry(f"+{x}+{y-c.POPUP_Y_OFFSET}")
+        y = self.winfo_y() + (self.winfo_height() // 2) - (c.POPUP_HEIGHT // 2)
+        popup.geometry(f"+{x}+{y - c.POPUP_Y_OFFSET}")
 
         tk.Label(popup, text="Select Object Type:").pack(pady=5)
         obj_type_var = tk.StringVar(popup)
@@ -103,17 +102,33 @@ class UserInterface(tk.Tk):
         name_entry = tk.Entry(color_name_frame, width=15)
         name_entry.grid(row=0, column=3, padx=5)
 
+        fill_frame = tk.Frame(popup)
+        fill_var = tk.BooleanVar()
+        fill_check = tk.Checkbutton(fill_frame, text="Fill Wireframe", variable=fill_var)
 
+        def update_fill_option(*args):
+            selected = obj_type_var.get().lower()
+            if selected == "wireframe":
+                fill_frame.pack(pady=5)
+                fill_check.pack()
+            else:
+                fill_check.pack_forget()
+                fill_frame.pack_forget()
+
+        obj_type_var.trace_add("write", update_fill_option)
+        update_fill_option()
 
         def create_object():
             obj_type = obj_type_var.get()
             coords = coord_entry.get()
             color = color_entry.get()
             name = name_entry.get()
-            self._app.create_object(obj_type, coords, name, color)
+            fill = fill_var.get() if obj_type.lower() == "wireframe" else False
+            self._app.create_object(obj_type, coords, name, color, fill=fill)
             popup.destroy()
 
         tk.Button(popup, text="Create", command=create_object).pack(pady=10)
+
     
     def log_message(self, message):
         self.logger_box.config(state=tk.NORMAL)
@@ -197,7 +212,7 @@ class UserInterface(tk.Tk):
         self.log_message("Zoomed out (factor: 1.15)")
     
     def rotate_window(self):
-        self.viewport.rotate_window(-45)
+        self.viewport.rotate_window(-30)
         self.log_message("Rotated window 30 degrees counterclockwise")
 
     def export(self):

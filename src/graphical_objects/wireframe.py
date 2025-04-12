@@ -2,9 +2,11 @@
 from graphical_objects.abstract_graphical_object import AbstractGraphicalObject
 
 class Wireframe(AbstractGraphicalObject):
-    def __init__(self, name, id, coordinates: list[tuple[str, str]], color: str):
+    def __init__(self, name, id, coordinates: list[tuple[str, str]], color: str, fill: bool):
+
         super().__init__(name, id, color)
         self.coordinates = coordinates
+        self._fill = fill
         #print(f"Wireframe {name} created at {coordinates}")
 
     def get_object_center(self):
@@ -23,18 +25,27 @@ class Wireframe(AbstractGraphicalObject):
         return self
     
     def draw(self, canvas):
-        for i in range(len(self.coordinates) - 1):
-            viewport_x0, viewport_y0 = canvas.window_to_viewport(*self._scn_vertices[i])
-            viewport_x1, viewport_y1 = canvas.window_to_viewport(*self._scn_vertices[i + 1])
-            canvas.create_line(
-                viewport_x0, viewport_y0,
-                viewport_x1, viewport_y1,
-                fill=self._color
+
+        viewport_coords = [
+            canvas.window_to_viewport(*vertex)
+            for vertex in self._scn_vertices
+        ]
+
+        if self._fill:
+
+            flat_coords = [coord for pair in viewport_coords for coord in pair]
+            canvas.create_polygon(
+                flat_coords,
+                fill=self._color,
+                outline=self._color
             )
-        viewport_x0, viewport_y0 = canvas.window_to_viewport(*self._scn_vertices[-1])
-        viewport_x1, viewport_y1 = canvas.window_to_viewport(*self._scn_vertices[0])
-        canvas.create_line(
-            viewport_x0, viewport_y0,
-            viewport_x1, viewport_y1,
-            fill=self._color
-        )
+        else:
+
+            for i in range(len(viewport_coords) - 1):
+                x0, y0 = viewport_coords[i]
+                x1, y1 = viewport_coords[i + 1]
+                canvas.create_line(x0, y0, x1, y1, fill=self._color)
+
+            x0, y0 = viewport_coords[-1]
+            x1, y1 = viewport_coords[0]
+            canvas.create_line(x0, y0, x1, y1, fill=self._color)

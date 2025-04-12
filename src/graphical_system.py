@@ -20,7 +20,7 @@ class GraphicalSystem:
     def run(self):
         self._ui.run()
         
-    def create_object(self, obj_type: str, coords: str, name: str, color: str):
+    def create_object(self, obj_type: str, coords: str, name: str, color: str, fill = False):
 
         # valida atributos
         if name == "" or name is None:
@@ -36,7 +36,7 @@ class GraphicalSystem:
             return
 
         #instancia objeto utilizando factory
-        obj = GraphicalObjectFactory.create_object(obj_type, name, self._unique_id, coords, color)
+        obj = GraphicalObjectFactory.create_object(obj_type, name, self._unique_id, coords, color, fill)
         self._unique_id += 1
 
         #adiciona objeto à display file

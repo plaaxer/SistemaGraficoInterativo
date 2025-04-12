@@ -2,7 +2,7 @@
 from graphical_objects.abstract_graphical_object import AbstractGraphicalObject
 
 class Line(AbstractGraphicalObject):
-    def __init__(self, name, id, coordinates: list[tuple[int, int]], color: str):
+    def __init__(self, name, id, coordinates: list[tuple[int, int]], color: str, fill: bool):
         super().__init__(name, id, color)
         self.coordinates = coordinates
         #print(f"Line {name} created at {coordinates}")
