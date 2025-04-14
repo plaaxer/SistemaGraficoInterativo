@@ -40,7 +40,11 @@ class UserInterface(tk.Tk):
 
     def create_buttons(self):
 
-        tk.Button(self.command_panel, command=self.object_creator_popup, text="Create Object").pack(pady=20)
+        first_frame = tk.Frame(self.command_panel, bg="gray")
+        first_frame.pack(pady=10)
+
+        tk.Button(first_frame, command=self.clip_objects, text="Clip Objects").pack(side=tk.LEFT, padx=5)
+        tk.Button(first_frame, command=self.object_creator_popup, text="Create Object").pack(side=tk.LEFT, padx=5)
 
         rotate_button = tk.Button(self.command_panel, command=self.rotate_window, text="Rotate")
         # rotate_photo = FileLoader.load_image(c.ROTATE_ICON_PATH)
@@ -129,6 +133,11 @@ class UserInterface(tk.Tk):
 
         tk.Button(popup, text="Create", command=create_object).pack(pady=10)
 
+    
+    def clip_objects(self):
+        self._app.clip_objects()
+        self.viewport.update()
+        self.log_message("Clipping applied to objects.")
     
     def log_message(self, message):
         self.logger_box.config(state=tk.NORMAL)

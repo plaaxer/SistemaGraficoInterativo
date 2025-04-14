@@ -15,11 +15,16 @@ class ObjectManagerUI(tk.Frame):
         self.object_listbox = tk.Listbox(self, height=10, width=50)
         self.object_listbox.pack(pady=10)
         
-        self.modify_button = tk.Button(self, text="Modify Selected", command=self.modify_selected_object)
-        self.modify_button.pack(pady=5)
-        
-        self.delete_button = tk.Button(self, text="Delete Selected", command=self.delete_selected_object)
-        self.delete_button.pack(pady=5)
+        button_frame = tk.Frame(self, bg="gray")
+        button_frame.pack(pady=5)
+
+        # Botão Modify Selected
+        self.modify_button = tk.Button(button_frame, text="Modify Selected", command=self.modify_selected_object)
+        self.modify_button.pack(side=tk.LEFT, padx=5)
+
+        # Botão Delete Selected
+        self.delete_button = tk.Button(button_frame, text="Delete Selected", command=self.delete_selected_object)
+        self.delete_button.pack(side=tk.LEFT, padx=5)
     
     def update(self):
         self.object_listbox.delete(0, tk.END)

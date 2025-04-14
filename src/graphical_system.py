@@ -4,6 +4,7 @@ from viewport import Viewport
 from graphical_objects.graphical_object_factory import GraphicalObjectFactory
 from file_loader import FileLoader
 from graphical_objects.objhandler import ObjHandler
+from clipper import Clipper
 
 import utils as ut
 import constants as c
@@ -16,6 +17,7 @@ class GraphicalSystem:
         self._viewport = Viewport(self._ui, width=c.VIEWPORT_WIDTH, height=c.VIEWPORT_HEIGHT, bg=c.VIEWPORT_BG_COLOR)
         self._ui.set_viewport(self._viewport)
         self._unique_id = 0
+        self._clipper = Clipper()
     
     def run(self):
         self._ui.run()
@@ -187,3 +189,7 @@ class GraphicalSystem:
                 self._ui.display_info(f"Object saved to {file_path}")
             except Exception as e:
                 self._ui.display_error(f"Error saving object: {str(e)}")
+
+    def clip_objects(self):
+        self._clipper.clip(self._viewport.display_file.get_objects(), self._viewport)
+        self._viewport.update()
