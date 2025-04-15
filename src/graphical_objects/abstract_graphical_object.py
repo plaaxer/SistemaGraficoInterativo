@@ -8,6 +8,7 @@ class AbstractGraphicalObject(ABC):
         self._name = name
         self._id = id
         self._color = color
+        self.in_window = False
 
     @abstractmethod
     def draw(self, canvas):

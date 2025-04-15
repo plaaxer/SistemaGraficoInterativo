@@ -193,3 +193,6 @@ class GraphicalSystem:
     def clip_objects(self):
         self._clipper.clip(self._viewport.display_file.get_objects(), self._viewport)
         self._viewport.update()
+
+    def switch_clipping_algorithm(self):
+        self._clipper.selected_algorithm = 2 if self._clipper.selected_algorithm == 1 else 1

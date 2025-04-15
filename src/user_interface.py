@@ -45,6 +45,7 @@ class UserInterface(tk.Tk):
 
         tk.Button(first_frame, command=self.clip_objects, text="Clip Objects").pack(side=tk.LEFT, padx=5)
         tk.Button(first_frame, command=self.object_creator_popup, text="Create Object").pack(side=tk.LEFT, padx=5)
+        tk.Button(first_frame, command=self.switch_clipping_algorithm, text="Switch Clipping Algorithm").pack(side=tk.LEFT, padx=5)
 
         rotate_button = tk.Button(self.command_panel, command=self.rotate_window, text="Rotate")
         # rotate_photo = FileLoader.load_image(c.ROTATE_ICON_PATH)
@@ -138,6 +139,10 @@ class UserInterface(tk.Tk):
         self._app.clip_objects()
         self.viewport.update()
         self.log_message("Clipping applied to objects.")
+    
+    def switch_clipping_algorithm(self):
+        self._app.switch_clipping_algorithm()
+        self.log_message("Clipping algorithm switched.")
     
     def log_message(self, message):
         self.logger_box.config(state=tk.NORMAL)

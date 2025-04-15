@@ -11,14 +11,15 @@ class Viewport(Canvas):
         # coordenadas da janela
         self.window_bounds = c.WINDOW_BOUNDS
         self.vup = c.VIEW_UP_VECTOR
+        self.margin = 0.05  # margem da janela de clipping
 
         self.window_angle = 0
 
     def draw(self):
         for obj in self.display_file.get_objects():
-            obj.draw(self)
-        # self.draw_y_direction()
-        #self.draw_window_axes()
+            if obj.in_window:  # Desenha apenas objetos visíveis
+                obj.draw(self)
+        self.draw_clipping_window()
         self.display_file.notify()
     
     def window_to_viewport(self, x, y):
@@ -123,6 +124,16 @@ class Viewport(Canvas):
         ux, uy = vy, -vx
         self.create_line(cx, cy, cx + ux * length, cy - uy * length, fill="blue", arrow="last")  # X
 
+    def draw_clipping_window(self):
+        # Define os limites da janela de clipping
+        x_min, y_min = self.window_to_viewport(-1 + self.margin, -1 + self.margin)
+        x_max, y_max = self.window_to_viewport(1 - self.margin, 1 - self.margin)
+
+        # Desenha um retângulo representando a área visível
+        self.create_rectangle(
+            x_min, y_min, x_max, y_max,
+            outline="red", width=2, dash=(5, 5)  # Linha tracejada para indicar os limites
+        )
     
     def update_specific_scn(self, obj):
             #print("---UPDATING SCN---")
