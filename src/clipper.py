@@ -176,7 +176,7 @@ class Clipper:
         # Verifica se o wireframe está visível após o clipping
         if polygon_points:
             wireframe.in_window = True
-            wireframe.set_scn_vertices(polygon_points)  # Atualiza os vértices clipados
+            wireframe.set_clipped_vertices(polygon_points)  # Atualiza os vértices clipados
 
     # Function to return x-value of point of intersection of two lines
     def x_intersect(self, x1, y1, x2, y2, x3, y3, x4, y4):
