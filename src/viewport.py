@@ -146,8 +146,16 @@ class Viewport(Canvas):
             cx = (x_min + x_max) / 2
             cy = (y_min + y_max) / 2
 
+            clipped = obj.get_clipped_vertices()
+            if clipped is not None:
+                print("Clipped vertices", clipped)
+                vertices = self.desnormalizar_vertices(clipped, self.window_bounds, self.vup)
+                print("Desnormalized vertices", vertices)
+                print(obj.get_vertices())
+            else:
+                vertices = obj.get_vertices()
             # faz a translação do mundo (nesse caso, 1 objeto) para o centro da window
-            translated = [(x - cx, y - cy) for x, y in obj.get_vertices()]
+            translated = [(x - cx, y - cy) for x, y in vertices]
 
             # o ângulo de rotação é o ângulo entre a VUP e o eixo Y do mundo
             vx, vy = self.vup
@@ -172,8 +180,54 @@ class Viewport(Canvas):
                 for x, y in rotated
             ]
 
-            # faz o update das coordenadas normalizadas do objeto
+            # faz o up
+            # date das coordenadas normalizadas do objeto
+            
+            print(scn)
+
             obj.set_scn_vertices(scn)
+    
+    def desnormalizar_vertices(self, scn_vertices, window_bounds, vup):
+
+        # localização da window
+        x_min, y_min = window_bounds[0]
+        x_max, y_max = window_bounds[1]
+
+        # computa o centro da window
+        cx = (x_min + x_max) / 2
+        cy = (y_min + y_max) / 2
+
+        # ângulo entre a VUP e o eixo Y do mundo (mesmo cálculo que antes)
+        vx, vy = vup
+        angle = -np.arctan2(vx, vy)
+
+        cos_a, sin_a = np.cos(-angle), np.sin(-angle)  # desfazendo a rotação
+
+        # tamanho da window
+        window_width = x_max - x_min
+        window_height = y_max - y_min
+
+        # desfaz a normalização
+        rotated = [
+            (x * window_width - window_width / 2,
+            y * window_height - window_height / 2)
+            for x, y in scn_vertices
+        ]
+
+        # desfaz a rotação (rotaciona por +θ)
+        translated = [
+            (x * cos_a - y * sin_a, x * sin_a + y * cos_a)
+            for x, y in rotated
+        ]
+
+        # desfaz a translação (move o centro de volta)
+        original = [
+            (x + cx, y + cy)
+            for x, y in translated
+        ]
+
+        return original
+
     
     def update_all_scn(self):
         for obj in self.display_file.get_objects():

@@ -8,7 +8,8 @@ class AbstractGraphicalObject(ABC):
         self._name = name
         self._id = id
         self._color = color
-        self.in_window = False
+        self.in_window = True
+        self._clipped_vertices = None
 
     @abstractmethod
     def draw(self, canvas):
@@ -61,3 +62,8 @@ class AbstractGraphicalObject(ABC):
     def get_scn_vertices(self):
         return self._scn_vertices
     
+    def set_clipped_vertices(self, clipped_vertices):
+        self._clipped_vertices = clipped_vertices
+
+    def get_clipped_vertices(self):
+        return self._clipped_vertices
