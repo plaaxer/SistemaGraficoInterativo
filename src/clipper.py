@@ -146,7 +146,7 @@ class Clipper:
         y2_clip = y1 + u2 * dy
         
         scn_vertices = [(x1_clip, y1_clip), (x2_clip, y2_clip)]
-        line.set_scn_vertices([(x1, y1), (x2, y2)])
+        line.set_scn_vertices(scn_vertices)
         line.in_window = True
 ###################################################################################################
 
