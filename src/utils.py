@@ -17,7 +17,6 @@ def parse_coordinates(coordinates: str, type: str = None) -> List[Tuple[float, f
 
     parsed_coords = []
    
-    #print("Pairs: ", pairs)
     for pair in pairs:
         values = pair.split(",")
         if len(values) != 2:

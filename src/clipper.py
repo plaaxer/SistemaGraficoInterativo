@@ -89,7 +89,7 @@ class Clipper:
 
         if accept:
             print(f"Line {line.get_id()} accepted: ({x1}, {y1}) -> ({x2}, {y2})")
-            line.set_clipped_vertices([(x1, y1), (x2, y2)])
+            line.set_scn_vertices([(x1, y1), (x2, y2)])
             line.in_window = True
         else:
             print(f"Line {line.get_id()} rejected")
@@ -146,7 +146,7 @@ class Clipper:
         y2_clip = y1 + u2 * dy
         
         scn_vertices = [(x1_clip, y1_clip), (x2_clip, y2_clip)]
-        line.set_clipped_vertices(scn_vertices)
+        line.set_scn_vertices([(x1, y1), (x2, y2)])
         line.in_window = True
 ###################################################################################################
 
@@ -176,7 +176,7 @@ class Clipper:
         # Verifica se o wireframe está visível após o clipping
         if polygon_points:
             wireframe.in_window = True
-            wireframe.set_clipped_vertices(polygon_points)  # Atualiza os vértices clipados
+            wireframe.set_scn_vertices(polygon_points)  # Atualiza os vértices clipados
 
     # Function to return x-value of point of intersection of two lines
     def x_intersect(self, x1, y1, x2, y2, x3, y3, x4, y4):

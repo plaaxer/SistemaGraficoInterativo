@@ -4,9 +4,10 @@ import constants as c
 import numpy as np
 
 class Viewport(Canvas):
-    def __init__(self, master=None, **kwargs):
+    def __init__(self, app, master=None, **kwargs):
         super().__init__(master, **kwargs)
         self.display_file = DisplayFile()
+        self._app = app
 
         # coordenadas da janela
         self.window_bounds = c.WINDOW_BOUNDS
@@ -146,14 +147,12 @@ class Viewport(Canvas):
             cx = (x_min + x_max) / 2
             cy = (y_min + y_max) / 2
 
-            clipped = obj.get_clipped_vertices()
-            if clipped is not None:
-                print("Clipped vertices", clipped)
-                vertices = self.desnormalizar_vertices(clipped, self.window_bounds, self.vup)
-                print("Desnormalized vertices", vertices)
-                print(obj.get_vertices())
-            else:
-                vertices = obj.get_vertices()
+            # tamanho da window
+            window_width = x_max - x_min
+            window_height = y_max - y_min
+
+            vertices = obj.get_vertices()
+                
             # faz a translação do mundo (nesse caso, 1 objeto) para o centro da window
             translated = [(x - cx, y - cy) for x, y in vertices]
 
@@ -162,10 +161,6 @@ class Viewport(Canvas):
             angle = -np.arctan2(vx, vy)
 
             cos_a, sin_a = np.cos(angle), np.sin(angle)
-
-            # tamanho da window
-            window_width = x_max - x_min
-            window_height = y_max - y_min
 
             # rotaciona o mundo por -θ para alinhar o VUP com o eixo Y
             rotated = [
@@ -179,11 +174,6 @@ class Viewport(Canvas):
                 (y + window_height / 2) / window_height)
                 for x, y in rotated
             ]
-
-            # faz o up
-            # date das coordenadas normalizadas do objeto
-            
-            print(scn)
 
             obj.set_scn_vertices(scn)
     
@@ -234,8 +224,8 @@ class Viewport(Canvas):
             self.update_specific_scn(obj)
 
     def update(self):
-        #print("display file objects", self.display_file.get_objects())
         self.update_all_scn()
+        self._app.clip_objects()
         self.clear()
         self.draw()
         self.update_idletasks()

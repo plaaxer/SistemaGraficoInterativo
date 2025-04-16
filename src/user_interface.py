@@ -43,7 +43,6 @@ class UserInterface(tk.Tk):
         first_frame = tk.Frame(self.command_panel, bg="gray")
         first_frame.pack(pady=10)
 
-        tk.Button(first_frame, command=self.clip_objects, text="Clip Objects").pack(side=tk.LEFT, padx=5)
         tk.Button(first_frame, command=self.object_creator_popup, text="Create Object").pack(side=tk.LEFT, padx=5)
         tk.Button(first_frame, command=self.switch_clipping_algorithm, text="Switch Clipping Algorithm").pack(side=tk.LEFT, padx=5)
 
@@ -133,12 +132,6 @@ class UserInterface(tk.Tk):
             popup.destroy()
 
         tk.Button(popup, text="Create", command=create_object).pack(pady=10)
-
-    
-    def clip_objects(self):
-        self._app.clip_objects()
-        self.viewport.update()
-        self.log_message("Clipping applied to objects.")
     
     def switch_clipping_algorithm(self):
         self._app.switch_clipping_algorithm()

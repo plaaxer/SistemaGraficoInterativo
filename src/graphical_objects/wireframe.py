@@ -26,6 +26,9 @@ class Wireframe(AbstractGraphicalObject):
     
     def draw(self, canvas):
 
+        if not self.in_window:
+            return
+
         viewport_coords = [
             canvas.window_to_viewport(*vertex)
             for vertex in self._scn_vertices

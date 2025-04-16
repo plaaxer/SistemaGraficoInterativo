@@ -14,7 +14,7 @@ class GraphicalSystem:
     def __init__(self):
         self._ui = UserInterface(self)
         self._file_loader = FileLoader(self)
-        self._viewport = Viewport(self._ui, width=c.VIEWPORT_WIDTH, height=c.VIEWPORT_HEIGHT, bg=c.VIEWPORT_BG_COLOR)
+        self._viewport = Viewport(self, self._ui, width=c.VIEWPORT_WIDTH, height=c.VIEWPORT_HEIGHT, bg=c.VIEWPORT_BG_COLOR)
         self._ui.set_viewport(self._viewport)
         self._unique_id = 0
         self._clipper = Clipper()
@@ -192,7 +192,6 @@ class GraphicalSystem:
 
     def clip_objects(self):
         self._clipper.clip(self._viewport.display_file.get_objects(), self._viewport)
-        self._viewport.update()
 
     def switch_clipping_algorithm(self):
         self._clipper.selected_algorithm = 2 if self._clipper.selected_algorithm == 1 else 1

@@ -21,6 +21,9 @@ class Point(AbstractGraphicalObject):
         return self
     
     def draw(self, canvas):
+        if not self.in_window:
+            return
+
         viewport_x, viewport_y = canvas.window_to_viewport(*self._scn_vertices[0])
         radius = 2
         canvas.create_oval(

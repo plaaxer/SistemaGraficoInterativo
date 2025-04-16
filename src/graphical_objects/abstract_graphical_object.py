@@ -60,6 +60,8 @@ class AbstractGraphicalObject(ABC):
         self._scn_vertices = [(float(x), float(y)) for x, y in scn_vertices]
 
     def get_scn_vertices(self):
+        if not hasattr(self, '_scn_vertices'):
+            return None
         return self._scn_vertices
     
     def set_clipped_vertices(self, clipped_vertices):
