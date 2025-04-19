@@ -78,59 +78,69 @@ class UserInterface(tk.Tk):
         popup = tk.Toplevel(self)
         popup.title("Create Object")
         popup.geometry(f"{c.POPUP_WIDTH}x{c.POPUP_HEIGHT}")
-
         self.update_idletasks()
         x = self.winfo_x() + (self.winfo_width() // 2) - (c.POPUP_WIDTH // 2)
         y = self.winfo_y() + (self.winfo_height() // 2) - (c.POPUP_HEIGHT // 2)
         popup.geometry(f"+{x}+{y - c.POPUP_Y_OFFSET}")
-
         tk.Label(popup, text="Select Object Type:").pack(pady=5)
         obj_type_var = tk.StringVar(popup)
         obj_type_var.set(c.DEFAULT_SELECTED_OBJECT)
         obj_types = c.POSSIBLE_OBJECTS
         obj_menu = tk.OptionMenu(popup, obj_type_var, *obj_types)
         obj_menu.pack(pady=5)
-
         tk.Label(popup, text="Enter Coordinates:").pack(pady=5)
         coord_entry = tk.Entry(popup, width=50)
         coord_entry.pack(pady=5)
-
         color_name_frame = tk.Frame(popup)
         color_name_frame.pack(pady=5, anchor="center", padx=10)
-
         tk.Label(color_name_frame, text="Color (optional):").grid(row=0, column=0, padx=5)
         color_entry = tk.Entry(color_name_frame, width=15)
         color_entry.grid(row=0, column=1, padx=5)
-
         tk.Label(color_name_frame, text="Name (optional):").grid(row=0, column=2, padx=5)
         name_entry = tk.Entry(color_name_frame, width=15)
         name_entry.grid(row=0, column=3, padx=5)
-
+        
         fill_frame = tk.Frame(popup)
         fill_var = tk.BooleanVar()
         fill_check = tk.Checkbutton(fill_frame, text="Fill Wireframe", variable=fill_var)
-
-        def update_fill_option(*args):
+        
+        curve_frame = tk.Frame(popup)
+        curve_type_var = tk.StringVar(popup)
+        curve_type_var.set(c.AVAILABLE_CURVES[0] if c.AVAILABLE_CURVES else "Bezier")  # Default to first curve type
+        
+        def update_ui_options(*args):
+            fill_frame.pack_forget()
+            fill_check.pack_forget()
+            curve_frame.pack_forget()
+            
             selected = obj_type_var.get().lower()
             if selected == "wireframe":
                 fill_frame.pack(pady=5)
                 fill_check.pack()
-            else:
-                fill_check.pack_forget()
-                fill_frame.pack_forget()
-
-        obj_type_var.trace_add("write", update_fill_option)
-        update_fill_option()
-
+            elif selected == "curve":
+                curve_frame.pack(pady=5)
+                tk.Label(curve_frame, text="Curve Type:").pack(side=tk.LEFT, padx=5)
+                curve_menu = tk.OptionMenu(curve_frame, curve_type_var, *c.AVAILABLE_CURVES)
+                curve_menu.pack(side=tk.LEFT, padx=5)
+        
+        obj_type_var.trace_add("write", update_ui_options)
+        update_ui_options()
+        
         def create_object():
             obj_type = obj_type_var.get()
             coords = coord_entry.get()
             color = color_entry.get()
             name = name_entry.get()
-            fill = fill_var.get() if obj_type.lower() == "wireframe" else False
-            self._app.create_object(obj_type, coords, name, color, fill=fill)
+            
+            options = {}
+            if obj_type.lower() == "wireframe":
+                options["fill"] = fill_var.get()
+            elif obj_type.lower() == "curve":
+                options["curve_type"] = curve_type_var.get()
+            
+            self._app.create_object(obj_type, coords, name, color, **options)
             popup.destroy()
-
+        
         tk.Button(popup, text="Create", command=create_object).pack(pady=10)
     
     def switch_clipping_algorithm(self):

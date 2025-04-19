@@ -1,7 +1,11 @@
 #logic constants
 
 DEFAULT_SELECTED_OBJECT = "Point"
-POSSIBLE_OBJECTS = ["Point", "Line", "Wireframe"]
+POSSIBLE_OBJECTS = ["Point", "Line", "Wireframe", "Curve"]
+AVAILABLE_CURVES = ["Bezier", "B-Spline"]
+
+CURVE_TYPE_BEZIER = "Bezier"
+CURVE_TYPE_BSPLINE = "B-Spline"
 
 WINDOW_BOUNDS = [(0, 0), (1920, 1080)]
 WINDOW_TO_VIEWPORT_RATIO = 0.95

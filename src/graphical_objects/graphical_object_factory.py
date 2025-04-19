@@ -13,10 +13,20 @@ class GraphicalObjectFactory:
             }
 
     @staticmethod
-    def create_object(object_type: str, name: str, object_id: int, coordinates: tuple, color: str, fill: bool):
+    def create_object(object_type: str, name: str, object_id: int, coordinates: tuple, color: str, fill: bool, curve_type: str):
 
         if (isinstance(object_type, AbstractGraphicalObject)):
             GraphicalObjectFactory.duplicate_object(object_type, name, object_id)
+
+        if (object_type == "Curve"):
+            if curve_type == c.CURVE_TYPE_BEZIER:
+                from graphical_objects.bezier import BezierCurve
+                return BezierCurve(name, object_id, coordinates, color, fill)
+            elif curve_type == c.CURVE_TYPE_BSPLINE:
+                from graphical_objects.bspline import BSplineCurve
+                return BSplineCurve(name, object_id, coordinates, color, fill)
+            else:
+                raise ValueError(f"tipo de curva desconhecido: {curve_type}")
     
         if object_type in GraphicalObjectFactory.object_classes:
             obj_class = GraphicalObjectFactory.object_classes[object_type]

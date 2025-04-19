@@ -41,6 +41,8 @@ def parse_coordinates(coordinates: str, type: str = None) -> List[Tuple[float, f
         raise ValueError("O objeto Wireframe requer pelo menos três coordenadas")
     elif (type == "Line" and len(parsed_coords) < 2):
         raise ValueError("O objeto Line requer pelo menos duas coordenadas")
+    elif (type == "Curve" and len(parsed_coords) < 4):
+        raise ValueError("O objeto Curve requer pelo menos quatro coordenadas")
         
     return parsed_coords
 

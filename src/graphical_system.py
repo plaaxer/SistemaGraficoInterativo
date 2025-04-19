@@ -22,13 +22,21 @@ class GraphicalSystem:
     def run(self):
         self._ui.run()
         
-    def create_object(self, obj_type: str, coords: str, name: str, color: str, fill = False):
+    def create_object(self, obj_type: str, coords: str, name: str, color: str, **options):
 
         # valida atributos
         if name == "" or name is None:
             name = "Objeto"
         if color == "" or color is None:
             color = c.DEFAULT_OBJECT_COLOR
+
+        # argumentos adicionais
+        fill = options.get("fill", False)
+        curve_type = options.get("curve_type", None)
+
+        if curve_type is None and obj_type == "Curve":
+            self._ui.display_error("Tipo de curva não especificado")
+            return
 
         #processa coordenadas
         try:
@@ -38,7 +46,7 @@ class GraphicalSystem:
             return
 
         #instancia objeto utilizando factory
-        obj = GraphicalObjectFactory.create_object(obj_type, name, self._unique_id, coords, color, fill)
+        obj = GraphicalObjectFactory.create_object(obj_type, name, self._unique_id, coords, color, fill=fill, curve_type=curve_type)
         self._unique_id += 1
 
         #adiciona objeto à display file

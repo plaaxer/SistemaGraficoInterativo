@@ -23,12 +23,11 @@ class AbstractGraphicalObject(ABC):
     def get_vertices(self):
         pass
 
-    @abstractmethod
-    def get_type(self):
-        pass
-
     def get_color(self):
         return self._color
+
+    def get_type(self):
+        return self.__class__.__name__
 
     
     @abstractmethod
