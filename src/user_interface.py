@@ -106,7 +106,7 @@ class UserInterface(tk.Tk):
         
         curve_frame = tk.Frame(popup)
         curve_type_var = tk.StringVar(popup)
-        curve_type_var.set(c.AVAILABLE_CURVES[0] if c.AVAILABLE_CURVES else "Bezier")  # Default to first curve type
+        curve_type_var.set(c.AVAILABLE_CURVES[1])  # Default to first curve type
         
         def update_ui_options(*args):
             fill_frame.pack_forget()
