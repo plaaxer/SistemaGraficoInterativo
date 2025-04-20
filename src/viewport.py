@@ -152,9 +152,13 @@ class Viewport(Canvas):
             window_height = y_max - y_min
 
             vertices = obj.get_vertices()
+
+            print("vertices in specific scn size: ", len(vertices))
                 
             # faz a translação do mundo (nesse caso, 1 objeto) para o centro da window
             translated = [(x - cx, y - cy) for x, y in vertices]
+
+            print("translated size: ", len(translated))
 
             # o ângulo de rotação é o ângulo entre a VUP e o eixo Y do mundo
             vx, vy = self.vup
@@ -168,12 +172,16 @@ class Viewport(Canvas):
                 for x, y in translated
             ]
 
+            print("rotated size: ", len(rotated))
+
             # normaliza de volta para scn
             scn = [
                 ((x + window_width / 2) / window_width,
                 (y + window_height / 2) / window_height)
                 for x, y in rotated
             ]
+
+            print("scn in update size: ", len(scn))
 
             obj.set_scn_vertices(scn)
     

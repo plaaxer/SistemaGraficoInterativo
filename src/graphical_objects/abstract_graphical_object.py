@@ -56,7 +56,10 @@ class AbstractGraphicalObject(ABC):
         return f"{self.__class__.__name__}({self._name})"
     
     def set_scn_vertices(self, scn_vertices):
+        print("--UPDATING SCN VERTICES--")
         self._scn_vertices = [(float(x), float(y)) for x, y in scn_vertices]
+        for i in range(len(self._scn_vertices)):
+            print(f"scn vertices {i}: {self._scn_vertices[i][0]:.2f}, {self._scn_vertices[i][1]:.2f}")
 
     def get_scn_vertices(self):
         if not hasattr(self, '_scn_vertices'):
