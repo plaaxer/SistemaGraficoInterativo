@@ -24,16 +24,6 @@ class Clipper:
             elif isinstance(obj, Wireframe):
                 vertices = obj.get_scn_vertices()
                 self.clip_wireframe(obj, window)
-            
-            """
-            elif isinstance(obj, Curve):
-                obj.calculate_points(window)
-                for point in obj.curve_points:
-                    point.update_scn()
-                    self.clip_point(point)
-                    if point.in_window:
-                        obj.in_window = True
-            """
         
     def clip_point(self, point):
         if ((point.get_scn_vertices()[0][0] <= 1-self.margin) and (point.get_scn_vertices()[0][0] >= -1+self.margin)) and ((point.get_scn_vertices()[0][1] <= 1-self.margin) and (point.get_scn_vertices()[0][1] >= -1+self.margin)):
