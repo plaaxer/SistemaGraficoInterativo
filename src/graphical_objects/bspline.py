@@ -10,18 +10,9 @@ class BSplineCurve(Wireframe):
         super().__init__(name, id, self.curve_coordinates, color, fill)
         self.set_type("Curve")
 
-    def create_bspline_curve(self, points, step=0.4):
+    def create_bspline_curve(self, points, step=0.01):
         processed_points = np.array(points)
         curve_points = self._calculate_bspline(processed_points, step)
-        print(f"Number of curve points: {len(curve_points)}")
-        print("All curve points (formatted):")
-        for i, point in enumerate(curve_points):
-            # Format each coordinate to 2 decimal places
-            if len(point) == 2:
-                formatted_point = f"({point[0]:.2f}, {point[1]:.2f})"
-            else:  # 3D point
-                formatted_point = f"({point[0]:.2f}, {point[1]:.2f}, {point[2]:.2f})"
-            print(f"  Point {i}: {formatted_point}")
         self.curve_coordinates = curve_points
 
     def _calculate_bspline(self, points, step):
@@ -147,3 +138,9 @@ class BSplineCurve(Wireframe):
             
         else:
             raise ValueError("Points must be 2D or 3D")
+        
+    def modify(self, new_coords):
+        self.coordinates = new_coords
+        self.create_bspline_curve(new_coords)
+        super().modify(self.curve_coordinates)
+        return self

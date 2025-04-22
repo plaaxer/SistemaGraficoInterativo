@@ -7,9 +7,9 @@ def parse_coordinates(coordinates: str, type: str = None) -> List[Tuple[float, f
         raise ValueError("Favor inserir coordenadas")
     
     coordinates = coordinates.replace(" ", "")
-    #print(coordinates.startswith("("))
+
     if not (coordinates.startswith("(") and coordinates.endswith(")")):
-        raise ValueError("Formato inválido de coordenadas")
+        raise ValueError("Formato inválido de coordenadas: deve começar e terminar com parênteses")
     
     pairs = coordinates.split("),(")
     pairs[0] = pairs[0].replace("(", "")
@@ -20,7 +20,7 @@ def parse_coordinates(coordinates: str, type: str = None) -> List[Tuple[float, f
     for pair in pairs:
         values = pair.split(",")
         if len(values) != 2:
-            raise ValueError("Formato inválido de coordenadas")
+            raise ValueError("Formato inválido de coordenadas: cada tupla deve conter exatamente duas coordenadas")
         
         try:
             x, y = float(values[0]), float(values[1])
@@ -45,6 +45,15 @@ def parse_coordinates(coordinates: str, type: str = None) -> List[Tuple[float, f
         raise ValueError("O objeto Curve requer pelo menos quatro coordenadas")
         
     return parsed_coords
+
+def parse_factor(factor: str) -> str:
+    if not factor.strip():
+        raise ValueError("Favor inserir fator")
+    
+    if not factor.isdigit():
+        raise ValueError("Fator deve ser um número")
+    
+    return float(factor)
 
 def homogeneo(vertices: List[Tuple[int, int]]) -> List[Tuple[int, int, int]]:
     #print(vertices)

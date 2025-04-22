@@ -39,14 +39,14 @@ class ObjectManagerUI(tk.Frame):
             self._app.delete_object(id)
             self.update()
         else:
-            self._app.display_error("No object selected")
+            self._user_interface.display_error("No object selected")
 
     def modify_selected_object(self):
         id = self.get_object_id()
         if id is not None:
             self.object_modifier_popup(id)
         else:
-            self._app.display_error("No object selected")
+            self._user_interface.display_error("No object selected")
 
     def get_object_id(self):
         selected_index = self.object_listbox.curselection()

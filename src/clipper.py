@@ -182,30 +182,44 @@ class Clipper:
     
     def compute_sutherland_hodgman_polygon_clip(self, polygon_points, edge_start, edge_end):
         new_polygon_points = []
-
+        
+        # No points to clip
+        if not polygon_points:
+            return []
+            
         for i in range(len(polygon_points)):
             k = (i+1) % len(polygon_points)
-            ix, iy = polygon_points[i]
-            kx, ky = polygon_points[k]
-
+            current_point = polygon_points[i]
+            next_point = polygon_points[k]
+            
+            ix, iy = current_point
+            kx, ky = next_point
+            
+            # Calculate if points are inside or outside the clipping edge
+            # We use the cross product to determine which side of the line the points are on
             i_pos = (edge_end[0]-edge_start[0]) * (iy-edge_start[1]) - (edge_end[1]-edge_start[1]) * (ix-edge_start[0])
             k_pos = (edge_end[0]-edge_start[0]) * (ky-edge_start[1]) - (edge_end[1]-edge_start[1]) * (kx-edge_start[0])
             
-            # Case 1 : When both points are inside
+            # Case 1: Both points inside - add the next point
             if i_pos < 0 and k_pos < 0:
-                # Only second point is added
-                new_polygon_points.append((kx, ky))
-            # Case 2: When only first point is outside
+                new_polygon_points.append(next_point)
+                
+            # Case 2: Current point outside, next point inside - add intersection and next point
             elif i_pos >= 0 and k_pos < 0:
-                # Point of intersection with edge and the second point is added
-                new_polygon_points.append((self.x_intersect(edge_start[0], edge_start[1], edge_end[0], edge_end[1], ix, iy, kx, ky), self.y_intersect(edge_start[0], edge_start[1], edge_end[0], edge_end[1], ix, iy, kx, ky)))
-                new_polygon_points.append((kx, ky))
-            # Case 3: When only second point is outside
+                intersection_x = self.x_intersect(edge_start[0], edge_start[1], edge_end[0], edge_end[1], ix, iy, kx, ky)
+                intersection_y = self.y_intersect(edge_start[0], edge_start[1], edge_end[0], edge_end[1], ix, iy, kx, ky)
+                new_polygon_points.append((intersection_x, intersection_y))
+                new_polygon_points.append(next_point)
+                
+            # Case 3: Current point inside, next point outside - add only intersection
             elif i_pos < 0 and k_pos >= 0:
-                # Only point of intersection with edge is added
-                new_polygon_points.append((self.x_intersect(edge_start[0], edge_start[1], edge_end[0], edge_end[1], ix, iy, kx, ky), self.y_intersect(edge_start[0], edge_start[1], edge_end[0], edge_end[1], ix, iy, kx, ky)))
-            # Case 4: When both points are outside
-            else:
-                pass
+                intersection_x = self.x_intersect(edge_start[0], edge_start[1], edge_end[0], edge_end[1], ix, iy, kx, ky)
+                intersection_y = self.y_intersect(edge_start[0], edge_start[1], edge_end[0], edge_end[1], ix, iy, kx, ky)
+                new_polygon_points.append((intersection_x, intersection_y))
+                
+            # Case 4: Both points outside - add nothing
+
+        lastone = new_polygon_points.pop()
+        new_polygon_points.insert(0, lastone)
 
         return new_polygon_points

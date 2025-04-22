@@ -39,10 +39,6 @@ class Wireframe(AbstractGraphicalObject):
             for vertex in self._scn_vertices
         ]
 
-        print("Viewport coordinates length: ", len(viewport_coords))
-        for index, point in enumerate (viewport_coords):
-            print(f"Point {index}: {point[0]:.2f}, {point[1]:.2f}")
-
         if self._fill:
 
             flat_coords = [coord for pair in viewport_coords for coord in pair]
@@ -54,8 +50,6 @@ class Wireframe(AbstractGraphicalObject):
         else:
 
             for i in range(len(viewport_coords) - 1):
-                print("POINTS ", i, "and", i + 1)
                 x0, y0 = viewport_coords[i]
                 x1, y1 = viewport_coords[i + 1]
-                print(f"creating line between points {x0:.2f}, {y0:.2f} and {x1:.2f}, {y1:.2f}")
                 canvas.create_line(x0, y0, x1, y1, fill=self._color)
