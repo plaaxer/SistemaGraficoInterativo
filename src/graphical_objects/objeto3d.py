@@ -1,0 +1,172 @@
+import numpy as np
+
+class Object3D:
+    def __init__(self, segments=None):
+        """
+        Initialize a 3D object as a wireframe model.
+        
+        Args:
+            segments: Optional list of line segments, where each segment
+                      is a pair (tuple or list) of Ponto3D objects.
+        """
+        self.segments = segments if segments is not None else []
+        
+    def add_segment(self, point1, point2):
+        """
+        Add a line segment to the object.
+        
+        Args:
+            point1: Ponto3D object for the first point of the segment
+            point2: Ponto3D object for the second point of the segment
+        """
+        self.segments.append((point1.clone(), point2.clone()))
+        
+    def add_segments(self, segments):
+        """
+        Add multiple line segments to the object.
+        
+        Args:
+            segments: List of pairs of Ponto3D objects
+        """
+        for p1, p2 in segments:
+            self.add_segment(p1, p2)
+    
+    def _apply_point_transformation(self, transformation, *args, **kwargs):
+        """
+        Apply a transformation to all points in the object.
+        
+        Args:
+            transformation: Name of the transformation method from Ponto3D class
+            *args, **kwargs: Arguments to pass to the transformation method
+        """
+        new_segments = []
+        for p1, p2 in self.segments:
+            # Apply transformation to copies of points to avoid modifying originals
+            new_p1 = p1.clone()
+            new_p2 = p2.clone()
+            
+            # Call the specified method on each point
+            getattr(new_p1, transformation)(*args, **kwargs)
+            getattr(new_p2, transformation)(*args, **kwargs)
+            
+            new_segments.append((new_p1, new_p2))
+        
+        self.segments = new_segments
+        return self
+    
+    def translate(self, dx, dy, dz):
+        """
+        Translate the entire object by the specified coordinates.
+        
+        Args:
+            dx, dy, dz: Displacement along each axis
+        """
+        return self._apply_point_transformation('translate', dx, dy, dz)
+    
+    def scale(self, sx, sy=None, sz=None, origin=None):
+        """
+        Scale the object by the specified factors.
+        
+        Args:
+            sx, sy, sz: Scale factors for each axis
+            origin: Optional point around which to perform the scaling
+        """
+        return self._apply_point_transformation('scale', sx, sy, sz, origin=origin)
+    
+    def rotate(self, angle_x=0, angle_y=0, angle_z=0, origin=None):
+        """
+        Rotate the object around the X, Y and Z axes.
+        
+        Args:
+            angle_x, angle_y, angle_z: Rotation angles in degrees
+            origin: Optional point around which to perform the rotation
+        """
+        return self._apply_point_transformation('rotate', 
+                                               angle_x, angle_y, angle_z, 
+                                               origin=origin)
+    
+    def rotate_around_axis(self, axis_start, axis_end, angle_degrees):
+        """
+        Rotate the object around an arbitrary axis defined by two points.
+        
+        Args:
+            axis_start: Ponto3D that defines the start of the rotation axis
+            axis_end: Ponto3D that defines the end of the rotation axis
+            angle_degrees: Rotation angle in degrees
+        """
+        # Calculate the direction vector of the axis
+        axis_vector = np.array([
+            axis_end.x - axis_start.x,
+            axis_end.y - axis_start.y,
+            axis_end.z - axis_start.z
+        ])
+        
+        # Normalize the direction vector
+        axis_length = np.linalg.norm(axis_vector)
+        if abs(axis_length) < 1e-10:
+            raise ValueError("Axis points cannot be coincident")
+        
+        axis_vector = axis_vector / axis_length
+        
+        # Extract the components of the direction vector
+        u, v, w = axis_vector
+        
+        # Convert angle to radians
+        angle_rad = np.radians(angle_degrees)
+        cos_angle = np.cos(angle_rad)
+        sin_angle = np.sin(angle_rad)
+        
+        # Calculate the components of the Rodrigues rotation matrix
+        # Formula for rotation around an arbitrary axis passing through the origin
+        rot_matrix = np.array([
+            [cos_angle + u*u*(1-cos_angle), u*v*(1-cos_angle) - w*sin_angle, u*w*(1-cos_angle) + v*sin_angle, 0],
+            [v*u*(1-cos_angle) + w*sin_angle, cos_angle + v*v*(1-cos_angle), v*w*(1-cos_angle) - u*sin_angle, 0],
+            [w*u*(1-cos_angle) - v*sin_angle, w*v*(1-cos_angle) + u*sin_angle, cos_angle + w*w*(1-cos_angle), 0],
+            [0, 0, 0, 1]
+        ], dtype=float)
+        
+        # If the axis doesn't pass through the origin, we need to adjust for this
+        if not (abs(axis_start.x) < 1e-10 and abs(axis_start.y) < 1e-10 and abs(axis_start.z) < 1e-10):
+            # Translation to origin
+            t1 = np.array([
+                [1, 0, 0, -axis_start.x],
+                [0, 1, 0, -axis_start.y],
+                [0, 0, 1, -axis_start.z],
+                [0, 0, 0, 1]
+            ], dtype=float)
+            
+            # Translation back
+            t2 = np.array([
+                [1, 0, 0, axis_start.x],
+                [0, 1, 0, axis_start.y],
+                [0, 0, 1, axis_start.z],
+                [0, 0, 0, 1]
+            ], dtype=float)
+            
+            # Combine transformations: t2 @ rot_matrix @ t1
+            rot_matrix = t2 @ rot_matrix @ t1
+        
+        # Apply the transformation to all points
+        new_segments = []
+        for p1, p2 in self.segments:
+            new_p1 = p1.clone()
+            new_p2 = p2.clone()
+            
+            new_p1.transform(rot_matrix)
+            new_p2.transform(rot_matrix)
+            
+            new_segments.append((new_p1, new_p2))
+        
+        self.segments = new_segments
+        return self
+    
+    def __repr__(self):
+        """String representation of the 3D object."""
+        return f"Object3D with {len(self.segments)} segments"
+    
+    def clone(self):
+        """Create a copy of the object."""
+        new_object = Object3D()
+        for p1, p2 in self.segments:
+            new_object.add_segment(p1, p2)
+        return new_object
