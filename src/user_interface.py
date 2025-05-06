@@ -24,7 +24,7 @@ class UserInterface(tk.Tk):
 
     def setup(self):
 
-        self.logger_box = tk.Text(self.command_panel, height=15, width=60, state=tk.DISABLED)
+        self.logger_box = tk.Text(self.command_panel, height=12, width=40, state=tk.DISABLED)
         self.logger_box.pack(pady=10)
 
         self.create_buttons()
@@ -39,39 +39,40 @@ class UserInterface(tk.Tk):
         self.object_manager.pack(pady=10)
 
     def create_buttons(self):
-
-        first_frame = tk.Frame(self.command_panel, bg="gray")
-        first_frame.pack(pady=10)
-
-        tk.Button(first_frame, command=self.object_creator_popup, text="Create Object").pack(side=tk.LEFT, padx=5)
-        tk.Button(first_frame, command=self.switch_clipping_algorithm, text="Switch Clipping Algorithm").pack(side=tk.LEFT, padx=5)
-
-        rotate_button = tk.Button(self.command_panel, command=self.rotate_window, text="Rotate")
-        # rotate_photo = FileLoader.load_image(c.ROTATE_ICON_PATH)
-        # rotate_button.config(image=rotate_photo)
-        # rotate_button.image = rotate_photo
-        # rotate_button.config(text="Rotate window")
-        rotate_button.pack(pady=10)
-
-        move_frame = tk.Frame(self.command_panel, bg="gray")
-        move_frame.pack(pady=10)
+            first_frame = tk.Frame(self.command_panel, bg="gray")
+            first_frame.pack(pady=10)
+            tk.Button(first_frame, command=self.object_creator_popup, text="Create Object").pack(side=tk.LEFT, padx=5)
+            tk.Button(first_frame, command=self.switch_clipping_algorithm, text="Switch Clipping Algorithm").pack(side=tk.LEFT, padx=5)
+            rotate_button = tk.Button(self.command_panel, command=self.rotate_window, text="Rotate Window")
+            # rotate_photo = FileLoader.load_image(c.ROTATE_ICON_PATH)
+            # rotate_button.config(image=rotate_photo)
+            # rotate_button.image = rotate_photo
+            # rotate_button.config(text="Rotate window")
+            rotate_button.pack(pady=10)
+            
+            move_frame = tk.Frame(self.command_panel, bg="gray")
+            move_frame.pack(pady=10)
         
-        tk.Button(move_frame, command=self.move_up, text="Move up").grid(row=0, column=1, padx=5, pady=5)
-        tk.Button(move_frame, command=self.move_left, text="Move left").grid(row=1, column=0, padx=5, pady=5)
-        tk.Button(move_frame, command=self.move_right, text="Move right").grid(row=1, column=2, padx=5, pady=5)
-        tk.Button(move_frame, command=self.move_down, text="Move down").grid(row=2, column=1, padx=5, pady=5)
+            tk.Button(move_frame, command=self.move_up, text="Move up").grid(row=0, column=1, padx=5, pady=5)
+            tk.Button(move_frame, command=self.move_left, text="Move left").grid(row=1, column=0, padx=5, pady=5)
+            tk.Button(move_frame, command=self.move_right, text="Move right").grid(row=1, column=2, padx=5, pady=5)
+            tk.Button(move_frame, command=self.move_down, text="Move down").grid(row=2, column=1, padx=5, pady=5)
+            
+            # New buttons for Z-axis navigation (in and out) - positioned to the left side
+            z_frame = tk.Frame(self.command_panel, bg="gray")
+            z_frame.pack(pady=10)
+            tk.Button(z_frame, command=self.move_in, text="Move in").pack(side=tk.LEFT, padx=5)
+            tk.Button(z_frame, command=self.move_out, text="Move out").pack(side=tk.LEFT, padx=5)
         
-        zoom_frame = tk.Frame(self.command_panel, bg="gray")
-        zoom_frame.pack(pady=10)
+            zoom_frame = tk.Frame(self.command_panel, bg="gray")
+            zoom_frame.pack(pady=10)
         
-        tk.Button(zoom_frame, command=self.zoom_in, text="Zoom in").pack(side=tk.LEFT, padx=5)
-        tk.Button(zoom_frame, command=self.zoom_out, text="Zoom out").pack(side=tk.LEFT, padx=5)
-
-        import_button = tk.Button(self, text="Import OBJ", command=self._app.import_object)
-        export_button = tk.Button(self, text="Export OBJ", command=self.export)
-
-        import_button.place(relx=1.0, rely=1.0, anchor="se", x=-140, y=-10)
-        export_button.place(relx=1.0, rely=1.0, anchor="se", x=-10, y=-10)
+            tk.Button(zoom_frame, command=self.zoom_in, text="Zoom in").pack(side=tk.LEFT, padx=5)
+            tk.Button(zoom_frame, command=self.zoom_out, text="Zoom out").pack(side=tk.LEFT, padx=5)
+            import_button = tk.Button(self, text="Import OBJ", command=self._app.import_object)
+            export_button = tk.Button(self, text="Export OBJ", command=self.export)
+            import_button.place(relx=1.0, rely=1.0, anchor="se", x=-140, y=-10)
+            export_button.place(relx=1.0, rely=1.0, anchor="se", x=-10, y=-10)
 
     
     def object_creator_popup(self):
@@ -209,6 +210,12 @@ class UserInterface(tk.Tk):
         self.viewport.translate_window(step, 0)
         self.viewport.update()
         self.log_message(f"Moved right by {step} pixels")
+
+    def move_in(self):
+        pass
+
+    def move_out(self):
+        pass
     
     def zoom_in(self):
         #debugging purposes

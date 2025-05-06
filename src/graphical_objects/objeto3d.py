@@ -170,3 +170,33 @@ class Object3D:
         for p1, p2 in self.segments:
             new_object.add_segment(p1, p2)
         return new_object
+    
+    def center(self):
+        """
+        Calculate the geometric center (centroid) of the object.
+        
+        Returns:
+            A Ponto3D object representing the center point of the object.
+            Returns None if the object has no segments.
+        """
+        if not self.segments:
+            return None
+        
+        all_points = set()
+        for p1, p2 in self.segments:
+            # Convert to tuple for hashability (assuming Ponto3D has x, y, z attributes)
+            all_points.add((p1.x, p1.y, p1.z))
+            all_points.add((p2.x, p2.y, p2.z))
+        
+        num_points = len(all_points)
+        sum_x = sum(p[0] for p in all_points)
+        sum_y = sum(p[1] for p in all_points)
+        sum_z = sum(p[2] for p in all_points)
+        
+        from ponto3d import Ponto3D
+        
+        return Ponto3D(
+            sum_x / num_points,
+            sum_y / num_points,
+            sum_z / num_points
+        )
