@@ -99,7 +99,7 @@ class Viewport(Canvas):
     def clear(self):
         self.delete("all")
 
-    # apenas para debug
+
     def draw_y_direction(self, length=50, color="red"):
 
         viewport_width = self.winfo_width()
