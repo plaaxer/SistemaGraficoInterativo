@@ -11,6 +11,7 @@ class Ponto3D:
         self.y = float(y)
         self.z = float(z)
         self._homogeneous = np.array([x, y, z, 1], dtype=float)
+        self._type = "3DPoint"
     
     def __eq__(self, other):
         if not isinstance(other, Ponto3D):

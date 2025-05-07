@@ -5,6 +5,7 @@ class Line(AbstractGraphicalObject):
     def __init__(self, name, id, coordinates: list[tuple[int, int]], color: str, fill: bool):
         super().__init__(name, id, color)
         self.coordinates = coordinates
+        self._type = "Line"
         #print(f"Line {name} created at {coordinates}")
 
     def get_object_center(self):

@@ -30,7 +30,6 @@ class Wireframe(AbstractGraphicalObject):
         return self
     
     def draw(self, canvas):
-
         if not self.in_window:
             return
 

@@ -20,7 +20,7 @@ class Viewport(Canvas):
 
     def draw(self):
         for obj in self.display_file.get_objects():
-            if obj.in_window:  # Desenha apenas objetos visíveis
+            #if obj.in_window:  # Desenha apenas objetos visíveis
                 obj.draw(self)
         self.draw_clipping_window()
         self.display_file.notify()
@@ -164,63 +164,68 @@ class Viewport(Canvas):
     def update_specific_scn(self, obj):
             #print("---UPDATING SCN---")
 
-        vertices = obj.get_vertices()
-        if len(vertices[0]) == 3:
-            print(vertices)
-            # 1. Translada VRP para a origem
-            vrp = self.vrp
-            translated_vertices = [
-                (x - vrp[0], y - vrp[1], z - vrp[2]) for x, y, z in vertices
-            ]
+        if obj._type == "3DObject" or obj._type == "3DPoint" or len(obj.get_vertices()) == 8:
+            segments = []
+            for segment in obj.segments:
+                # 1. Translada VRP para a origem
+                vrp = self.vrp
+                translated_vertices = [
+                    (x - vrp[0], y - vrp[1], z - vrp[2]) for x, y, z in segment
+                ]
 
-            # 2. Determina VPN e seus ângulos com X e Y
-            vpn = self.vpn / np.linalg.norm(self.vpn)  # Normaliza VPN
-            theta_x = np.arctan2(vpn[1], vpn[2])  # Ângulo com o eixo X
-            theta_y = np.arctan2(vpn[0], vpn[2])  # Ângulo com o eixo Y
+                # 2. Determina VPN e seus ângulos com X e Y
+                vpn = self.vpn / np.linalg.norm(self.vpn)  # Normaliza VPN
+                theta_x = np.arctan2(vpn[1], vpn[2])  # Ângulo com o eixo X
+                theta_y = np.arctan2(vpn[0], vpn[2])  # Ângulo com o eixo Y
 
-            # 3. Rotaciona o mundo em torno de X e Y para alinhar VPN com o eixo Z
-            # Rotação em torno de X
-            cos_theta_x, sin_theta_x = np.cos(-theta_x), np.sin(-theta_x)
-            rotation_x = np.array([
-                [1, 0, 0],
-                [0, cos_theta_x, -sin_theta_x],
-                [0, sin_theta_x, cos_theta_x]
-            ])
-            rotated_vertices = [np.dot(rotation_x, v) for v in translated_vertices]
+                # 3. Rotaciona o mundo em torno de X e Y para alinhar VPN com o eixo Z
+                # Rotação em torno de X
+                cos_theta_x, sin_theta_x = np.cos(-theta_x), np.sin(-theta_x)
+                rotation_x = np.array([
+                    [1, 0, 0],
+                    [0, cos_theta_x, -sin_theta_x],
+                    [0, sin_theta_x, cos_theta_x]
+                ])
+                rotated_vertices = [np.dot(rotation_x, v) for v in translated_vertices]
 
-            # Rotação em torno de Y
-            cos_theta_y, sin_theta_y = np.cos(-theta_y), np.sin(-theta_y)
-            rotation_y = np.array([
-                [cos_theta_y, 0, sin_theta_y],
-                [0, 1, 0],
-                [-sin_theta_y, 0, cos_theta_y]
-            ])
-            rotated_vertices = [np.dot(rotation_y, v) for v in rotated_vertices]
+                # Rotação em torno de Y
+                cos_theta_y, sin_theta_y = np.cos(-theta_y), np.sin(-theta_y)
+                rotation_y = np.array([
+                    [cos_theta_y, 0, sin_theta_y],
+                    [0, 1, 0],
+                    [-sin_theta_y, 0, cos_theta_y]
+                ])
+                rotated_vertices = [np.dot(rotation_y, v) for v in rotated_vertices]
 
-            # 4. Ignora as coordenadas Z dos objetos
-            projected_vertices = [(x, y) for x, y, z in rotated_vertices]
-            # 5. Normaliza as coordenadas restantes
-            x_min, y_min = self.window_bounds[0][:2]
-            x_max, y_max = self.window_bounds[1][:2]
-            cx, cy = (x_min + x_max) / 2, (y_min + y_max) / 2
-            window_width, window_height = x_max - x_min, y_max - y_min
+                # 4. Ignora as coordenadas Z dos objetos
+                projected_vertices = [(x, y) for x, y, z in rotated_vertices]
+                # 5. Normaliza as coordenadas restantes
+                x_min, y_min = self.window_bounds[0][:2]
+                x_max, y_max = self.window_bounds[1][:2]
+                #cx, cy = (x_min + x_max) / 2, (y_min + y_max) / 2
+                window_width, window_height = x_max - x_min, y_max - y_min
 
-            normalized_vertices = [
-                ((x - cx) / window_width, (y - cy) / window_height)
-                for x, y in projected_vertices
-            ]
-            # 6. Aplica o clipping
-            clipped_vertices = []
-            for x, y in normalized_vertices:
-                if -1 + self.margin <= x <= 1 - self.margin and -1 + self.margin <= y <= 1 - self.margin:
-                    clipped_vertices.append((x, y))
-            # 7. Transforma para coordenadas da viewport
-            print(clipped_vertices)
-            for x, y in clipped_vertices:
-                self.window_to_viewport(x, y)
-            return
+                normalized_vertices = [
+                    ((x - x_min) / window_width, (y - y_min) / window_height)
+                    for x, y in projected_vertices
+                ]
+                # 6. Aplica o clipping
+                '''
+                clipped_vertices = []
+                for x, y in normalized_vertices:
+                    if 0 + self.margin <= x <= 1 - self.margin and 0 + self.margin <= y <= 1 - self.margin:
+                        clipped_vertices.append((x, y))
+                '''
+                clipped_vertices = normalized_vertices
+                # 7. Transforma para coordenadas da viewport
+                
+                segments.append(clipped_vertices)
+            obj.set_normalized_segments(segments)
+            obj.in_window = True
+            
         
         else:
+            vertices = obj.get_vertices()
             # localização da window
             x_min, y_min = self.window_bounds[0]
             x_max, y_max = self.window_bounds[1]
@@ -234,7 +239,7 @@ class Viewport(Canvas):
             window_height = y_max - y_min
 
             print("vertices in specific scn size: ", len(vertices))
-                
+            print(vertices)    
             # faz a translação do mundo (nesse caso, 1 objeto) para o centro da window
             translated = [(x - cx, y - cy) for x, y in vertices]
 

@@ -2,6 +2,7 @@ from graphical_objects.abstract_graphical_object import AbstractGraphicalObject
 from graphical_objects.point import Point
 from graphical_objects.line import Line
 from graphical_objects.wireframe import Wireframe
+from graphical_objects.objeto3d import Object3D
 from viewport import Viewport
 import copy
 import numpy as np
@@ -24,6 +25,9 @@ class Clipper:
             elif isinstance(obj, Wireframe):
                 vertices = obj.get_scn_vertices()
                 self.clip_wireframe(obj, window)
+
+            elif isinstance(obj, Object3D):
+                return
         
     def clip_point(self, point):
         if ((point.get_scn_vertices()[0][0] <= 1-self.margin) and (point.get_scn_vertices()[0][0] >= -1+self.margin)) and ((point.get_scn_vertices()[0][1] <= 1-self.margin) and (point.get_scn_vertices()[0][1] >= -1+self.margin)):
