@@ -224,6 +224,7 @@ class UserInterface(tk.Tk):
         self._app.create_object("Line", "(480, 270), (480, 810)", "debugWorldCenterX", "red")
         self._app.create_object("Line", "(480, 270), (1440, 270)", "debugWorldCenterY", "blue")
         self._app.create_object("Wireframe", "(50, 50), (1500, 50), (1500, 800)", "debugWireframe", "green")
+        self._app.create_object("3DObject", "(100, 100, 0), (400, 100, 0), (400, 400, 0), (100, 400, 0), (100, 100, 300), (400, 100, 300), (400, 400, 300), (100, 400, 300)", "debugCube", "black")
         # factor = 0.85
         # self.viewport.zoom(factor)
         # self.viewport.update()

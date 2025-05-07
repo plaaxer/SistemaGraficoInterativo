@@ -1,7 +1,9 @@
 import numpy as np
+from graphical_objects.wireframe import Wireframe
+from graphical_objects.ponto3d import Ponto3D
 
-class Object3D:
-    def __init__(self, segments=None):
+class Object3D(Wireframe):
+    def __init__(self, name, id, coordinates: list[tuple[str, str, str]], color: str, fill=False):
         """
         Initialize a 3D object as a wireframe model.
         
@@ -9,7 +11,17 @@ class Object3D:
             segments: Optional list of line segments, where each segment
                       is a pair (tuple or list) of Ponto3D objects.
         """
-        self.segments = segments if segments is not None else []
+        self._name = name
+        self._id = id
+        self._color = color
+        self.in_window = True
+        self._clipped_vertices = None
+        self._type = "Object3D"
+        self.vertices = coordinates
+        self.segments = []
+        for i in range(len(coordinates) - 1):
+            self.add_segment(coordinates[i], coordinates[i + 1])
+        print("Object3D created with segments:", self.segments)
         
     def add_segment(self, point1, point2):
         """
@@ -19,7 +31,15 @@ class Object3D:
             point1: Ponto3D object for the first point of the segment
             point2: Ponto3D object for the second point of the segment
         """
+        if isinstance(point1, tuple):
+            point1 = Ponto3D(point1[0], point1[1], point1[2])
+        if isinstance(point2, tuple):
+            point2 = Ponto3D(point2[0], point2[1], point2[2])
+
         self.segments.append((point1.clone(), point2.clone()))
+        for p in (point1, point2):
+            if p not in self.vertices:
+                self.vertices.append(p)
         
     def add_segments(self, segments):
         """
@@ -182,11 +202,7 @@ class Object3D:
         if not self.segments:
             return None
         
-        all_points = set()
-        for p1, p2 in self.segments:
-            # Convert to tuple for hashability (assuming Ponto3D has x, y, z attributes)
-            all_points.add((p1.x, p1.y, p1.z))
-            all_points.add((p2.x, p2.y, p2.z))
+        all_points = self.get_vertices()
         
         num_points = len(all_points)
         sum_x = sum(p[0] for p in all_points)
@@ -200,3 +216,11 @@ class Object3D:
             sum_y / num_points,
             sum_z / num_points
         )
+    
+    def get_vertices(self):
+        all_points = set()
+        for p1, p2 in self.segments:
+            # Convert to tuple for hashability (assuming Ponto3D has x, y, z attributes)
+            all_points.add((p1.x, p1.y, p1.z))
+            all_points.add((p2.x, p2.y, p2.z))
+        return list(all_points)

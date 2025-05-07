@@ -12,6 +12,14 @@ class Ponto3D:
         self.z = float(z)
         self._homogeneous = np.array([x, y, z, 1], dtype=float)
     
+    def __eq__(self, other):
+        if not isinstance(other, Ponto3D):
+            return False
+        return self.x == other.x and self.y == other.y and self.z == other.z
+
+    def __hash__(self):
+        return hash((self.x, self.y, self.z))
+
     def __repr__(self):
         """String representation of the 3D point."""
         return f"Ponto3D({self.x:.3f}, {self.y:.3f}, {self.z:.3f})"

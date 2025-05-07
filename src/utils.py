@@ -19,19 +19,22 @@ def parse_coordinates(coordinates: str, type: str = None) -> List[Tuple[float, f
    
     for pair in pairs:
         values = pair.split(",")
-        if len(values) != 2:
-            raise ValueError("Formato inválido de coordenadas: cada tupla deve conter exatamente duas coordenadas")
-        
+        if len(values) not in [2, 3]:
+            raise ValueError("Formato inválido de coordenadas: cada tupla deve conter exatamente duas ou três coordenadas (x, y) ou (x, y, z)")
         try:
-            x, y = float(values[0]), float(values[1])
-        except ValueError:            
+            # Processa coordenadas com dois ou três valores
+            if len(values) == 2:
+                x, y = float(values[0]), float(values[1])
+                parsed_coords.append((x, y))
+            elif len(values) == 3:
+                x, y, z = float(values[0]), float(values[1]), float(values[2])
+                parsed_coords.append((x, y, z))
+        except ValueError:
             raise ValueError("Coordenadas devem ser números válidos")
         
         # por enquanto, vamos arredondar as coordenadas para inteiros
         #x, y = map(round, (x, y))
         
-
-        parsed_coords.append((x, y))
 
     if (type == "Point" and len(parsed_coords) > 1):
         raise ValueError("O objeto Point requer apenas uma coordenada")

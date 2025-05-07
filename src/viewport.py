@@ -164,9 +164,9 @@ class Viewport(Canvas):
     def update_specific_scn(self, obj):
             #print("---UPDATING SCN---")
 
-        try:
-            vertices = obj.get_vertices()
-        except AttributeError:
+        vertices = obj.get_vertices()
+        if len(vertices[0]) == 3:
+            print(vertices)
             # 1. Translada VRP para a origem
             vrp = self.vrp
             translated_vertices = [
@@ -209,56 +209,62 @@ class Viewport(Canvas):
                 ((x - cx) / window_width, (y - cy) / window_height)
                 for x, y in projected_vertices
             ]
-
-            # 7. Transforma para coordenadas da viewport
+            # 6. Aplica o clipping
+            clipped_vertices = []
             for x, y in normalized_vertices:
+                if -1 + self.margin <= x <= 1 - self.margin and -1 + self.margin <= y <= 1 - self.margin:
+                    clipped_vertices.append((x, y))
+            # 7. Transforma para coordenadas da viewport
+            print(clipped_vertices)
+            for x, y in clipped_vertices:
                 self.window_to_viewport(x, y)
             return
         
-        # localização da window
-        x_min, y_min = self.window_bounds[0]
-        x_max, y_max = self.window_bounds[1]
+        else:
+            # localização da window
+            x_min, y_min = self.window_bounds[0]
+            x_max, y_max = self.window_bounds[1]
 
-        # computa o centro da window
-        cx = (x_min + x_max) / 2
-        cy = (y_min + y_max) / 2
+            # computa o centro da window
+            cx = (x_min + x_max) / 2
+            cy = (y_min + y_max) / 2
 
-        # tamanho da window
-        window_width = x_max - x_min
-        window_height = y_max - y_min
+            # tamanho da window
+            window_width = x_max - x_min
+            window_height = y_max - y_min
 
-        print("vertices in specific scn size: ", len(vertices))
-            
-        # faz a translação do mundo (nesse caso, 1 objeto) para o centro da window
-        translated = [(x - cx, y - cy) for x, y in vertices]
+            print("vertices in specific scn size: ", len(vertices))
+                
+            # faz a translação do mundo (nesse caso, 1 objeto) para o centro da window
+            translated = [(x - cx, y - cy) for x, y in vertices]
 
-        print("translated size: ", len(translated))
+            print("translated size: ", len(translated))
 
-        # o ângulo de rotação é o ângulo entre a VUP e o eixo Y do mundo
-        vx = self.vup[0]
-        vy = self.vup[1]
-        angle = -np.arctan2(vx, vy)
+            # o ângulo de rotação é o ângulo entre a VUP e o eixo Y do mundo
+            vx = self.vup[0]
+            vy = self.vup[1]
+            angle = -np.arctan2(vx, vy)
 
-        cos_a, sin_a = np.cos(angle), np.sin(angle)
+            cos_a, sin_a = np.cos(angle), np.sin(angle)
 
-        # rotaciona o mundo por -θ para alinhar o VUP com o eixo Y
-        rotated = [
-            (x * cos_a - y * sin_a, x * sin_a + y * cos_a)
-            for x, y in translated
-        ]
+            # rotaciona o mundo por -θ para alinhar o VUP com o eixo Y
+            rotated = [
+                (x * cos_a - y * sin_a, x * sin_a + y * cos_a)
+                for x, y in translated
+            ]
 
-        print("rotated size: ", len(rotated))
+            print("rotated size: ", len(rotated))
 
-        # normaliza de volta para scn
-        scn = [
-            ((x + window_width / 2) / window_width,
-            (y + window_height / 2) / window_height)
-            for x, y in rotated
-        ]
+            # normaliza de volta para scn
+            scn = [
+                ((x + window_width / 2) / window_width,
+                (y + window_height / 2) / window_height)
+                for x, y in rotated
+            ]
 
-        print("scn in update size: ", len(scn))
+            print("scn in update size: ", len(scn))
 
-        obj.set_scn_vertices(scn)
+            obj.set_scn_vertices(scn)
 
     
     def update_all_scn(self):

@@ -2,6 +2,8 @@ from graphical_objects.abstract_graphical_object import AbstractGraphicalObject
 from graphical_objects.point import Point
 from graphical_objects.line import Line
 from graphical_objects.wireframe import Wireframe
+from graphical_objects.objeto3d import Object3D
+from graphical_objects.ponto3d import Ponto3D
 import constants as c
 
 class GraphicalObjectFactory:
@@ -10,6 +12,8 @@ class GraphicalObjectFactory:
                 "Point": Point,
                 "Line": Line,
                 "Wireframe": Wireframe,
+                "3DObject": Object3D,
+                "3DPoint": Ponto3D,
             }
 
     @staticmethod
