@@ -32,11 +32,17 @@ class Wireframe(AbstractGraphicalObject):
     def draw(self, canvas):
         if not self.in_window:
             return
+        
+        print("Wireframe draw method called")
+
+        print("Wireframe scn vertices: " , self._scn_vertices)
 
         viewport_coords = [
             canvas.window_to_viewport(*vertex)
             for vertex in self._scn_vertices
         ]
+
+        print("Wireframe viewport coords: ", viewport_coords)
 
         if self._fill:
 

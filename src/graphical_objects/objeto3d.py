@@ -12,6 +12,7 @@ class Object3D(Wireframe):
                       is a pair (tuple or list) of Ponto3D objects.
         """
         self._name = name
+        self._fill = fill
         self._id = id
         self._color = color
         self.in_window = True
@@ -225,21 +226,9 @@ class Object3D(Wireframe):
             all_points.add((p2.x, p2.y, p2.z))
         return list(all_points)
     
-    def set_normalized_segments(self, segments):
-        self.normalized_segments = segments
-    
-    def get_normalized_segments(self):
-        return self.normalized_segments
-    
-    def draw(self, canvas):
-        print("OIOIOIOIOIOIOIOI")
-        lines = self.get_normalized_segments()
-        
-        for line in lines:
-                x0, y0 = canvas.window_to_viewport(*line[0])
-                x1, y1 = canvas.window_to_viewport(*line[1])
-                canvas.create_line(
-                x0, y0,
-                x1, y1,
-                fill=self._color
-            )
+    def get_3d_segments(self):
+        all_points = []
+        for p1, p2 in self.segments:
+            all_points.append(p1)
+            all_points.append(p2)
+        return all_points

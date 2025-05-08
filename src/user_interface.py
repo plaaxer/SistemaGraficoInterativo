@@ -219,17 +219,23 @@ class UserInterface(tk.Tk):
     
     def zoom_in(self):
         #debugging purposes
-        self._app.create_object("Line", "((1, 1), (1919, 1))", "debugWorldAxisX", "red")
-        self._app.create_object("Line", "((1, 1), (1, 1079))", "debugWorldAxisY", "blue")
-        self._app.create_object("Line", "(480, 270), (480, 810)", "debugWorldCenterX", "red")
-        self._app.create_object("Line", "(480, 270), (1440, 270)", "debugWorldCenterY", "blue")
-        self._app.create_object("Wireframe", "(50, 50), (1500, 50), (1500, 800)", "debugWireframe", "green")
+        # self._app.create_object("Line", "((1, 1), (1919, 1))", "debugWorldAxisX", "red")
+        # self._app.create_object("Line", "((1, 1), (1, 1079))", "debugWorldAxisY", "blue")
+        # self._app.create_object("Line", "(480, 270), (480, 810)", "debugWorldCenterX", "red")
+        # self._app.create_object("Line", "(480, 270), (1440, 270)", "debugWorldCenterY", "blue")
+        # self._app.create_object("Wireframe", "(50, 50), (1500, 50), (1500, 800)", "debugWireframe", "green")
+        # self._app.create_object(
+        #     "3DObject",
+        #     "(100, 100, 50), (400, 150, 50), (450, 400, 50), (150, 350, 50), (120, 120, 350), (420, 170, 350), (470, 420, 350), (170, 370, 350)",
+        #     "perspectiveCube",
+        #     "blue"
+        # )
         self._app.create_object(
-    "3DObject",
-    "(100, 100, 50), (400, 150, 50), (450, 400, 50), (150, 350, 50), (120, 120, 350), (420, 170, 350), (470, 420, 350), (170, 370, 350)",
-    "perspectiveCube",
-    "blue"
-)
+            "3DObject",
+            "(1060, 640, 100), (1060, 640, -100), (1060, 440, 100), (1060, 440, -100), (860, 640, 100), (860, 640, -100), (860, 440, 100), (860, 440, -100)",
+            "gCube",
+            "purple"
+        )
         # factor = 0.85
         # self.viewport.zoom(factor)
         # self.viewport.update()
