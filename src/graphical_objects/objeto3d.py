@@ -14,14 +14,13 @@ class Object3D(Wireframe):
         self._name = name
         self._id = id
         self._color = color
-        self.in_window = True
         self._clipped_vertices = None
         self._type = "3DObject"
         self.vertices = coordinates
         self.segments = []
-        for i in range(len(coordinates) - 1):
+        for i in range(0, len(coordinates) - 1, 2):
             self.add_segment(coordinates[i], coordinates[i + 1])
-        print("Object3D created with segments:", self.segments)
+        self.in_window = [False] * len(self.segments)
         
     def add_segment(self, point1, point2):
         """
@@ -232,12 +231,14 @@ class Object3D(Wireframe):
         return self.normalized_segments
     
     def draw(self, canvas):
-        print("OIOIOIOIOIOIOIOI")
         lines = self.get_normalized_segments()
         
-        for line in lines:
-                x0, y0 = canvas.window_to_viewport(*line[0])
-                x1, y1 = canvas.window_to_viewport(*line[1])
+        for i in range(len(lines)):
+                #print(self.in_window)
+                if not self.in_window[i]:
+                    continue
+                x0, y0 = canvas.window_to_viewport(*lines[i][0])
+                x1, y1 = canvas.window_to_viewport(*lines[i][1])
                 canvas.create_line(
                 x0, y0,
                 x1, y1,

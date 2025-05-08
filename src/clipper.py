@@ -18,6 +18,9 @@ class Clipper:
                 obj.get_scn_vertices()
                 self.clip_point(obj)
 
+            elif isinstance(obj, Object3D):
+                self.clip_object3d(obj, window)
+
             elif isinstance(obj, Line):
                 vertices = obj.get_scn_vertices()
                 self.clip_line1(obj) if self.selected_algorithm == 1 else self.clip_line_2(obj)
@@ -26,8 +29,6 @@ class Clipper:
                 vertices = obj.get_scn_vertices()
                 self.clip_wireframe(obj, window)
 
-            elif isinstance(obj, Object3D):
-                return
         
     def clip_point(self, point):
         if ((point.get_scn_vertices()[0][0] <= 1-self.margin) and (point.get_scn_vertices()[0][0] >= -1+self.margin)) and ((point.get_scn_vertices()[0][1] <= 1-self.margin) and (point.get_scn_vertices()[0][1] >= -1+self.margin)):
@@ -44,7 +45,7 @@ class Clipper:
         x2, y2 = line.get_scn_vertices()[1]
         code1 = self.compute_cohen_sutherland_code(x1, y1, x_min, x_max, y_min, y_max)
         code2 = self.compute_cohen_sutherland_code(x2, y2, x_min, x_max, y_min, y_max)
-        print(f"Line: {line.get_id()}, Code1: {code1}, Code2: {code2}")
+        #print(f"Line: {line.get_id()}, Code1: {code1}, Code2: {code2}")
 
         accept = False
         while True:
@@ -82,11 +83,11 @@ class Clipper:
                     code2 = self.compute_cohen_sutherland_code(x2, y2, x_min, x_max, y_min, y_max)
 
         if accept:
-            print(f"Line {line.get_id()} accepted: ({x1}, {y1}) -> ({x2}, {y2})")
+            #print(f"Line {line.get_id()} accepted: ({x1}, {y1}) -> ({x2}, {y2})")
             line.set_scn_vertices([(x1, y1), (x2, y2)])
             line.in_window = True
         else:
-            print(f"Line {line.get_id()} rejected")
+            #print(f"Line {line.get_id()} rejected")
             line.in_window = False
 
     def compute_cohen_sutherland_code(self, x, y, x_min, x_max, y_min, y_max):
@@ -227,3 +228,46 @@ class Clipper:
         new_polygon_points.insert(0, lastone)
 
         return new_polygon_points
+    
+    def clip_object3d(self, object3d, window):
+        segments = object3d.get_normalized_segments()
+        for i in range(len(segments)):
+            #print(object3d.in_window)
+            print(i)
+            object3d.in_window[i] = False
+            x_min = y_min = -1 + self.margin
+            x_max = y_max = 1 - self.margin
+            x1, y1 = segments[i][0]
+            x2, y2 = segments[i][1]
+            dx, dy = x2 - x1, y2 - y1
+            p = [-dx, dx, -dy, dy]
+            q = [x1 - x_min, x_max - x1, y1 - y_min, y_max - y1]
+            u1, u2 = 0, 1
+
+            if x_min < x1 < x_max and y_min < y1 < y_max and x_min < x2 < x_max and y_min < y2 < y_max:
+                object3d.in_window[i] = True
+                continue
+
+            for i in range(4):
+                if p[i] == 0:
+                    if q[i] < 0:
+                        break                    
+                else:
+                    r = q[i] / p[i]
+                    if p[i] < 0:
+                        u1 = max(u1, r)
+                    else:
+                        u2 = min(u2, r)
+            
+            if u1 > u2:  # Reject the line if u1 > u2
+                return
+            
+            # Apply Liang-Barsky clipping
+            x1_clip = x1 + u1 * dx
+            y1_clip = y1 + u1 * dy
+            x2_clip = x1 + u2 * dx
+            y2_clip = y1 + u2 * dy
+            
+            scn_vertices = [(x1_clip, y1_clip), (x2_clip, y2_clip)]
+            segments[i] = scn_vertices
+            object3d.in_window[i] = True

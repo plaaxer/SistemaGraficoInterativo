@@ -20,8 +20,7 @@ class Viewport(Canvas):
 
     def draw(self):
         for obj in self.display_file.get_objects():
-            #if obj.in_window:  # Desenha apenas objetos visíveis
-                obj.draw(self)
+            obj.draw(self)
         self.draw_clipping_window()
         self.display_file.notify()
     
@@ -164,7 +163,7 @@ class Viewport(Canvas):
     def update_specific_scn(self, obj):
             #print("---UPDATING SCN---")
 
-        if obj._type == "3DObject" or obj._type == "3DPoint" or len(obj.get_vertices()) == 8:
+        if obj._type == "3DObject" or obj._type == "3DPoint": #or len(obj.get_vertices()) == 8:
             segments = []
             for segment in obj.segments:
                 # 1. Translada VRP para a origem
@@ -221,7 +220,6 @@ class Viewport(Canvas):
                 
                 segments.append(clipped_vertices)
             obj.set_normalized_segments(segments)
-            obj.in_window = True
             
         
         else:
@@ -238,12 +236,12 @@ class Viewport(Canvas):
             window_width = x_max - x_min
             window_height = y_max - y_min
 
-            print("vertices in specific scn size: ", len(vertices))
-            print(vertices)    
+            #print("vertices in specific scn size: ", len(vertices))
+            #print(vertices)    
             # faz a translação do mundo (nesse caso, 1 objeto) para o centro da window
             translated = [(x - cx, y - cy) for x, y in vertices]
 
-            print("translated size: ", len(translated))
+            #print("translated size: ", len(translated))
 
             # o ângulo de rotação é o ângulo entre a VUP e o eixo Y do mundo
             vx = self.vup[0]
@@ -258,7 +256,7 @@ class Viewport(Canvas):
                 for x, y in translated
             ]
 
-            print("rotated size: ", len(rotated))
+            #print("rotated size: ", len(rotated))
 
             # normaliza de volta para scn
             scn = [
@@ -267,7 +265,7 @@ class Viewport(Canvas):
                 for x, y in rotated
             ]
 
-            print("scn in update size: ", len(scn))
+            #print("scn in update size: ", len(scn))
 
             obj.set_scn_vertices(scn)
 
