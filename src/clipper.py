@@ -239,35 +239,49 @@ class Clipper:
             x_max = y_max = 1 - self.margin
             x1, y1 = segments[i][0]
             x2, y2 = segments[i][1]
-            dx, dy = x2 - x1, y2 - y1
-            p = [-dx, dx, -dy, dy]
-            q = [x1 - x_min, x_max - x1, y1 - y_min, y_max - y1]
-            u1, u2 = 0, 1
+            code1 = self.compute_cohen_sutherland_code(x1, y1, x_min, x_max, y_min, y_max)
+            code2 = self.compute_cohen_sutherland_code(x2, y2, x_min, x_max, y_min, y_max)
+            #print(f"Line: {line.get_id()}, Code1: {code1}, Code2: {code2}")
 
-            if x_min < x1 < x_max and y_min < y1 < y_max and x_min < x2 < x_max and y_min < y2 < y_max:
-                object3d.in_window[i] = True
-                continue
-
-            for i in range(4):
-                if p[i] == 0:
-                    if q[i] < 0:
-                        break                    
+            accept = False
+            while True:
+                if code1 == 0 and code2 == 0:
+                    accept = True
+                    break
+                elif code1 & code2 != 0:
+                    break
                 else:
-                    r = q[i] / p[i]
-                    if p[i] < 0:
-                        u1 = max(u1, r)
+                    x, y = 0, 0
+                    code_out = code1 if code1 != 0 else code2
+                    if x2 == x1:
+                        m = float('inf')
                     else:
-                        u2 = min(u2, r)
-            
-            if u1 > u2:  # Reject the line if u1 > u2
-                return
-            
-            # Apply Liang-Barsky clipping
-            x1_clip = x1 + u1 * dx
-            y1_clip = y1 + u1 * dy
-            x2_clip = x1 + u2 * dx
-            y2_clip = y1 + u2 * dy
-            
-            scn_vertices = [(x1_clip, y1_clip), (x2_clip, y2_clip)]
-            segments[i] = scn_vertices
-            object3d.in_window[i] = True
+                        m = (y2 - y1) / (x2 - x1)
+
+                    if code_out & 8:
+                        x = x1 + (1 / m) * (y_max - y1) if m != float('inf') else x1
+                        y = y_max
+                    elif code_out & 4:
+                        x = x1 + (1 / m) * (y_min - y1) if m != float('inf') else x1
+                        y = y_min
+                    elif code_out & 2:
+                        y = m * (x_max - x1) + y1 if m != float('inf') else y1
+                        x = x_max
+                    elif code_out & 1:
+                        y = m * (x_min - x1) + y1 if m != float('inf') else y1
+                        x = x_min
+
+                    if code_out == code1:
+                        x1, y1 = x, y
+                        code1 = self.compute_cohen_sutherland_code(x1, y1, x_min, x_max, y_min, y_max)
+                    else:
+                        x2, y2 = x, y
+                        code2 = self.compute_cohen_sutherland_code(x2, y2, x_min, x_max, y_min, y_max)
+
+            if accept:
+                #print(f"Line {line.get_id()} accepted: ({x1}, {y1}) -> ({x2}, {y2})")
+                segments[i] = [(x1, y1), (x2, y2)]
+                object3d.in_window[i] = True
+            else:
+                #print(f"Line {line.get_id()} rejected")
+                object3d.in_window[i] = False

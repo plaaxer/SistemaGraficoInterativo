@@ -39,12 +39,12 @@ class Viewport(Canvas):
 
         return viewport_x, viewport_y
     
-    def translate_window(self, dwx, dwy, dwz):
+    def translate_window(self, dwx, dwy, dwz=0):
 
             print("Requested translation:", dwx, dwy)
 
             # VUP: eixo Y da janela
-            vx, vy = self.vup
+            vx, vy, vz = self.vup
 
             angle = -np.arctan2(vx, vy)
 
