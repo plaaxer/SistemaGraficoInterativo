@@ -12,6 +12,7 @@ class Object3D(Wireframe):
                       is a pair (tuple or list) of Ponto3D objects.
         """
         self._name = name
+        self._fill = fill
         self._id = id
         self._color = color
         self._clipped_vertices = None
