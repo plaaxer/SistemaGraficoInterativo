@@ -2,8 +2,6 @@ from tkinter import Canvas
 from display_file import DisplayFile
 import constants as c
 import numpy as np
-from typing import cast
-from graphical_objects.ponto3d import Ponto3D
 
 class Viewport(Canvas):
     def __init__(self, app, master=None, **kwargs):
@@ -41,11 +39,12 @@ class Viewport(Canvas):
 
         return viewport_x, viewport_y
     
-    def translate_window(self, dwx, dwy, dwz=0):
+    def translate_window(self, dwx, dwy, dwz):
 
             print("Requested translation:", dwx, dwy)
 
-            vx, vy, vz = self.vup
+            # VUP: eixo Y da janela
+            vx, vy = self.vup
 
             angle = -np.arctan2(vx, vy)
 
@@ -162,149 +161,62 @@ class Viewport(Canvas):
         )
     
     def update_specific_scn(self, obj):
+            #print("---UPDATING SCN---")
 
         if obj._type == "3DObject" or obj._type == "3DPoint": #or len(obj.get_vertices()) == 8:
             segments = []
-            for ponto in obj.get_3d_segments():
-                
-                print("ponto:", ponto)
+            for segment in obj.segments:
+                # 1. Translada VRP para a origem
+                vrp = self.vrp
+                translated_vertices = [
+                    (x - vrp[0], y - vrp[1], z - vrp[2]) for x, y, z in segment
+                ]
 
-                ponto2 = ponto.clone()
+                # 2. Determina VPN e seus ângulos com X e Y
+                vpn = self.vpn / np.linalg.norm(self.vpn)  # Normaliza VPN
+                theta_x = np.arctan2(vpn[1], vpn[2])  # Ângulo com o eixo X
+                theta_y = np.arctan2(vpn[0], vpn[2])  # Ângulo com o eixo Y
 
-                point = cast(Ponto3D, ponto2)  # apenas para a ide ajudar aq
-                
-                # Step 1: Translate by -VRP to bring VRP to origin
-                point.translate(-self.vrp[0], -self.vrp[1], -self.vrp[2])
-                
-                # Step 2: Create rotation matrices to align coordinate system
-                # Calculate orthonormal basis (n, u, v) for the view coordinate system
-                n = np.array(self.vpn) / np.linalg.norm(self.vpn)  # Normalize VPN
-                
-                # Calculate u = VUP × n / |VUP × n| (cross product)
-                u = np.cross(self.vup, n)
-                u = u / np.linalg.norm(u)  # Normalize
-                
-                # Calculate v = n × u
-                v = np.cross(n, u)
-                
-                # Step 3: Create rotation matrix to align with view coordinate system
-                R = np.array([
-                    [u[0], u[1], u[2], 0],
-                    [v[0], v[1], v[2], 0],
-                    [n[0], n[1], n[2], 0],
-                    [0, 0, 0, 1]
+                # 3. Rotaciona o mundo em torno de X e Y para alinhar VPN com o eixo Z
+                # Rotação em torno de X
+                cos_theta_x, sin_theta_x = np.cos(-theta_x), np.sin(-theta_x)
+                rotation_x = np.array([
+                    [1, 0, 0],
+                    [0, cos_theta_x, -sin_theta_x],
+                    [0, sin_theta_x, cos_theta_x]
                 ])
-                
-                # Step 4: Apply rotation
-                point.transform(R)
-                
-                # Step 5: Perform orthogonal projection by simply discarding z-coordinate
-                # Create a new 2D projected point (or keep the 3D point with z=0 for consistency)
-                projected_point = (point.x, point.y)
-                print("POINT AFTER PROJECTION: ", point.x, point.y, point.z)
-                
-                # Add to segments list
-                segments.append(projected_point)
+                rotated_vertices = [np.dot(rotation_x, v) for v in translated_vertices]
 
-                        # Now process the segments similar to the 2D objects
-            # Get window bounds
-            x_min, y_min = self.window_bounds[0]
-            x_max, y_max = self.window_bounds[1]
+                # Rotação em torno de Y
+                cos_theta_y, sin_theta_y = np.cos(-theta_y), np.sin(-theta_y)
+                rotation_y = np.array([
+                    [cos_theta_y, 0, sin_theta_y],
+                    [0, 1, 0],
+                    [-sin_theta_y, 0, cos_theta_y]
+                ])
+                rotated_vertices = [np.dot(rotation_y, v) for v in rotated_vertices]
 
-            # Compute center of window
-            cx = (x_min + x_max) / 2
-            cy = (y_min + y_max) / 2
+                # 4. Ignora as coordenadas Z dos objetos
+                projected_vertices = [(x, y) for x, y, z in rotated_vertices]
+                # 5. Normaliza as coordenadas restantes
+                x_min, y_min = self.window_bounds[0][:2]
+                x_max, y_max = self.window_bounds[1][:2]
+                #cx, cy = (x_min + x_max) / 2, (y_min + y_max) / 2
+                window_width, window_height = x_max - x_min, y_max - y_min
 
-            # Window dimensions
-            window_width = x_max - x_min
-            window_height = y_max - y_min
-
-            # Translate to center of window
-            translated = [(x - cx, y - cy) for x, y in segments]
-
-            # Calculate rotation angle between VUP and Y-axis
-            vx = self.vup[0]
-            vy = self.vup[1]
-            angle = -np.arctan2(vx, vy)
-            cos_a, sin_a = np.cos(angle), np.sin(angle)
-
-            # Rotate to align VUP with Y-axis
-            rotated = [
-                (x * cos_a - y * sin_a, x * sin_a + y * cos_a)
-                for x, y in translated
-            ]
-
-            # Normalize to (0,0) to (1,1)
-            normalized_segments = [
-                ((x + window_width / 2) / window_width,
-                (y + window_height / 2) / window_height)
-                for x, y in rotated
-            ]
-
-            obj.set_scn_vertices(normalized_segments)
-            print("previous segments: ", segments)
-            print("3d obj set normalized segments as: ", normalized_segments)
-
-            obj.set_scn_vertices(normalized_segments)
-
-
-
-            # for segment in obj.get_vertices():
-
-            #     print("segment:", segment)
-            #     x,y,z = segment
-
-            #     # 1. Translada VRP para a origem
-            #     vrp = self.vrp
-            #     translated_vertices = [
-            #         (x - vrp[0], y - vrp[1], z - vrp[2])
-            #     ]
-
-            #     # 2. Determina VPN e seus ângulos com X e Y
-            #     vpn = self.vpn / np.linalg.norm(self.vpn)  # Normaliza VPN
-            #     theta_x = np.arctan2(vpn[1], vpn[2])  # Ângulo com o eixo X
-            #     theta_y = np.arctan2(vpn[0], vpn[2])  # Ângulo com o eixo Y
-
-            #     # 3. Rotaciona o mundo em torno de X e Y para alinhar VPN com o eixo Z
-            #     # Rotação em torno de X
-            #     cos_theta_x, sin_theta_x = np.cos(-theta_x), np.sin(-theta_x)
-            #     rotation_x = np.array([
-            #         [1, 0, 0],
-            #         [0, cos_theta_x, -sin_theta_x],
-            #         [0, sin_theta_x, cos_theta_x]
-            #     ])
-            #     rotated_vertices = [np.dot(rotation_x, v) for v in translated_vertices]
-
-            #     # Rotação em torno de Y
-            #     cos_theta_y, sin_theta_y = np.cos(-theta_y), np.sin(-theta_y)
-            #     rotation_y = np.array([
-            #         [cos_theta_y, 0, sin_theta_y],
-            #         [0, 1, 0],
-            #         [-sin_theta_y, 0, cos_theta_y]
-            #     ])
-            #     rotated_vertices = [np.dot(rotation_y, v) for v in rotated_vertices]
-
-            #     # 4. Ignora as coordenadas Z dos objetos
-            #     projected_vertices = [(x, y) for x, y, z in rotated_vertices]
-            #     # 5. Normaliza as coordenadas restantes
-            #     x_min, y_min = self.window_bounds[0][:2]
-            #     x_max, y_max = self.window_bounds[1][:2]
-            #     #cx, cy = (x_min + x_max) / 2, (y_min + y_max) / 2
-            #     window_width, window_height = x_max - x_min, y_max - y_min
-
-            #     normalized_vertices = [
-            #         ((x - x_min) / window_width, (y - y_min) / window_height)
-            #         for x, y in projected_vertices
-            #     ]
-            #     # 6. Aplica o clipping
-            #     '''
-            #     clipped_vertices = []
-            #     for x, y in normalized_vertices:
-            #         if 0 + self.margin <= x <= 1 - self.margin and 0 + self.margin <= y <= 1 - self.margin:
-            #             clipped_vertices.append((x, y))
-            #     '''
-            #     clipped_vertices = normalized_vertices
-            #     # 7. Transforma para coordenadas da viewport
+                normalized_vertices = [
+                    ((x - x_min) / window_width, (y - y_min) / window_height)
+                    for x, y in projected_vertices
+                ]
+                # 6. Aplica o clipping
+                '''
+                clipped_vertices = []
+                for x, y in normalized_vertices:
+                    if 0 + self.margin <= x <= 1 - self.margin and 0 + self.margin <= y <= 1 - self.margin:
+                        clipped_vertices.append((x, y))
+                '''
+                clipped_vertices = normalized_vertices
+                # 7. Transforma para coordenadas da viewport
                 
                 segments.append(clipped_vertices)
             obj.set_normalized_segments(segments)
@@ -364,7 +276,7 @@ class Viewport(Canvas):
 
     def update(self):
         self.update_all_scn()
-        #self._app.clip_objects()
+        self._app.clip_objects()
         self.clear()
         self.draw()
         self.update_idletasks()
