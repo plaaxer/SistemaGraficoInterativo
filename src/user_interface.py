@@ -39,40 +39,93 @@ class UserInterface(tk.Tk):
         self.object_manager.pack(pady=10)
 
     def create_buttons(self):
-            first_frame = tk.Frame(self.command_panel, bg="gray")
-            first_frame.pack(pady=10)
-            tk.Button(first_frame, command=self.object_creator_popup, text="Create Object").pack(side=tk.LEFT, padx=5)
-            tk.Button(first_frame, command=self.switch_clipping_algorithm, text="Switch Clipping Algorithm").pack(side=tk.LEFT, padx=5)
-            rotate_button = tk.Button(self.command_panel, command=self.rotate_window, text="Rotate Window")
-            # rotate_photo = FileLoader.load_image(c.ROTATE_ICON_PATH)
-            # rotate_button.config(image=rotate_photo)
-            # rotate_button.image = rotate_photo
-            # rotate_button.config(text="Rotate window")
-            rotate_button.pack(pady=10)
+        first_frame = tk.Frame(self.command_panel, bg="gray")
+        first_frame.pack(pady=10)
+        tk.Button(first_frame, command=self.object_creator_popup, text="Create Object").pack(side=tk.LEFT, padx=5)
+        tk.Button(first_frame, command=self.switch_clipping_algorithm, text="Switch Clipping Algorithm").pack(side=tk.LEFT, padx=5)
+        tk.Button(first_frame, command=self.debug, text="Debug").pack(side=tk.LEFT, padx=5)
+        
+        rotate_button = tk.Button(self.command_panel, command=self.rotate_window_popup, text="Rotate Window")
+        rotate_button.pack(pady=10)
+        
+        move_frame = tk.Frame(self.command_panel, bg="gray")
+        move_frame.pack(pady=10)
+
+        tk.Button(move_frame, command=self.move_up, text="Move up").grid(row=0, column=1, padx=5, pady=5)
+        tk.Button(move_frame, command=self.move_left, text="Move left").grid(row=1, column=0, padx=5, pady=5)
+        tk.Button(move_frame, command=self.move_right, text="Move right").grid(row=1, column=2, padx=5, pady=5)
+        tk.Button(move_frame, command=self.move_down, text="Move down").grid(row=2, column=1, padx=5, pady=5)
+        
+        z_frame = tk.Frame(self.command_panel, bg="gray")
+        z_frame.pack(pady=10)
+        tk.Button(z_frame, command=self.move_in, text="Move in").pack(side=tk.LEFT, padx=5)
+        tk.Button(z_frame, command=self.move_out, text="Move out").pack(side=tk.LEFT, padx=5)
+
+        zoom_frame = tk.Frame(self.command_panel, bg="gray")
+        zoom_frame.pack(pady=10)
+
+        tk.Button(zoom_frame, command=self.zoom_in, text="Zoom in").pack(side=tk.LEFT, padx=5)
+        tk.Button(zoom_frame, command=self.zoom_out, text="Zoom out").pack(side=tk.LEFT, padx=5)
+        import_button = tk.Button(self, text="Import OBJ", command=self._app.import_object)
+        export_button = tk.Button(self, text="Export OBJ", command=self.export)
+        import_button.place(relx=1.0, rely=1.0, anchor="se", x=-140, y=-10)
+        export_button.place(relx=1.0, rely=1.0, anchor="se", x=-10, y=-10)
             
-            move_frame = tk.Frame(self.command_panel, bg="gray")
-            move_frame.pack(pady=10)
-        
-            tk.Button(move_frame, command=self.move_up, text="Move up").grid(row=0, column=1, padx=5, pady=5)
-            tk.Button(move_frame, command=self.move_left, text="Move left").grid(row=1, column=0, padx=5, pady=5)
-            tk.Button(move_frame, command=self.move_right, text="Move right").grid(row=1, column=2, padx=5, pady=5)
-            tk.Button(move_frame, command=self.move_down, text="Move down").grid(row=2, column=1, padx=5, pady=5)
+    def rotate_window_popup(self):
+
+        popup = tk.Toplevel(self)
+        popup.title("Window Rotation")
+        popup.geometry(f"{c.POPUP_WIDTH}x{c.POPUP_HEIGHT}")
+        popup.resizable(False, False)
             
-            # New buttons for Z-axis navigation (in and out) - positioned to the left side
-            z_frame = tk.Frame(self.command_panel, bg="gray")
-            z_frame.pack(pady=10)
-            tk.Button(z_frame, command=self.move_in, text="Move in").pack(side=tk.LEFT, padx=5)
-            tk.Button(z_frame, command=self.move_out, text="Move out").pack(side=tk.LEFT, padx=5)
-        
-            zoom_frame = tk.Frame(self.command_panel, bg="gray")
-            zoom_frame.pack(pady=10)
-        
-            tk.Button(zoom_frame, command=self.zoom_in, text="Zoom in").pack(side=tk.LEFT, padx=5)
-            tk.Button(zoom_frame, command=self.zoom_out, text="Zoom out").pack(side=tk.LEFT, padx=5)
-            import_button = tk.Button(self, text="Import OBJ", command=self._app.import_object)
-            export_button = tk.Button(self, text="Export OBJ", command=self.export)
-            import_button.place(relx=1.0, rely=1.0, anchor="se", x=-140, y=-10)
-            export_button.place(relx=1.0, rely=1.0, anchor="se", x=-10, y=-10)
+        popup.transient(self)
+        popup.grab_set()
+            
+        tk.Label(popup, text="Adjust Window Rotation", font=("Arial", 12, "bold")).pack(pady=10)
+
+        controls_frame = tk.Frame(popup)
+        controls_frame.pack(pady=5, padx=10, fill=tk.BOTH, expand=True)
+            
+        x_frame = tk.Frame(controls_frame)
+        x_frame.pack(fill=tk.X, pady=5)
+        tk.Label(x_frame, text="X Rotation:").pack(side=tk.LEFT, padx=5)
+        x_angle = tk.Scale(x_frame, from_=-180, to=180, orient=tk.HORIZONTAL, length=150)
+        x_angle.pack(side=tk.RIGHT, padx=5, fill=tk.X, expand=True)
+            
+        y_frame = tk.Frame(controls_frame)
+        y_frame.pack(fill=tk.X, pady=5)
+        tk.Label(y_frame, text="Y Rotation:").pack(side=tk.LEFT, padx=5)
+        y_angle = tk.Scale(y_frame, from_=-180, to=180, orient=tk.HORIZONTAL, length=150)
+        y_angle.pack(side=tk.RIGHT, padx=5, fill=tk.X, expand=True)
+            
+        z_frame = tk.Frame(controls_frame)
+        z_frame.pack(fill=tk.X, pady=5)
+        tk.Label(z_frame, text="Z Rotation:").pack(side=tk.LEFT, padx=5)
+        z_angle = tk.Scale(z_frame, from_=-180, to=180, orient=tk.HORIZONTAL, length=150)
+        z_angle.pack(side=tk.RIGHT, padx=5, fill=tk.X, expand=True)
+            
+        button_frame = tk.Frame(popup)
+        button_frame.pack(pady=10, fill=tk.X)
+            
+        apply_button = tk.Button(
+            button_frame, 
+            text="Apply Rotation",
+            command=lambda: [
+                self.viewport.rotate_window(x_angle.get(), y_angle.get(), z_angle.get()),
+                popup.destroy()
+            ]
+        )
+        apply_button.pack(side=tk.LEFT, padx=20, pady=5, expand=True)
+            
+        cancel_button = tk.Button(button_frame, text="Cancel", command=popup.destroy)
+        cancel_button.pack(side=tk.RIGHT, padx=20, pady=5, expand=True)
+            
+        popup.update_idletasks()
+        width = popup.winfo_width()
+        height = popup.winfo_height()
+        x = (popup.winfo_screenwidth() // 2) - (width // 2)
+        y = (popup.winfo_screenheight() // 2) - (height // 2)
+        popup.geometry(f"{width}x{height}+{x}+{y}")
 
     
     def object_creator_popup(self):
@@ -216,8 +269,8 @@ class UserInterface(tk.Tk):
 
     def move_out(self):
         pass
-    
-    def zoom_in(self):
+
+    def debug(self):
         #debugging purposes
         # self._app.create_object("Line", "((1, 1), (1919, 1))", "debugWorldAxisX", "red")
         # self._app.create_object("Line", "((1, 1), (1, 1079))", "debugWorldAxisY", "blue")
@@ -232,14 +285,16 @@ class UserInterface(tk.Tk):
         # )
         self._app.create_object(
     "3DObject",
-    "(100, 100, 50), (400, 150, 50), (400, 150, 50), (450, 400, 50), (450, 400, 50), (150, 350, 50), (150, 350, 50), (100, 100, 50), (120, 120, 350), (420, 170, 350), (420, 170, 350), (470, 420, 350), (470, 420, 350), (170, 370, 350), (170, 370, 350), (120, 120, 350), (100, 100, 50), (120, 120, 350), (400, 150, 50), (420, 170, 350), (450, 400, 50), (470, 420, 350), (150, 350, 50), (170, 370, 350)",
+    "(600, 600, 550), (900, 650, 550), (900, 650, 550), (950, 900, 550), (950, 900, 550), (650, 850, 550), (650, 850, 550), (600, 600, 550), (620, 620, 850), (920, 670, 850), (920, 670, 850), (970, 920, 850), (970, 920, 850), (670, 870, 850), (670, 870, 850), (620, 620, 850), (600, 600, 550), (620, 620, 850), (900, 650, 550), (920, 670, 850), (950, 900, 550), (970, 920, 850), (650, 850, 550), (670, 870, 850)",
     "perspectiveCube",
     "blue"
 )
-        # factor = 0.85
-        # self.viewport.zoom(factor)
-        # self.viewport.update()
-        # self.log_message("Zoomed in (factor: 0.85)")
+
+    def zoom_in(self):
+        factor = 0.85
+        self.viewport.zoom(factor)
+        self.viewport.update()
+        self.log_message("Zoomed in (factor: 0.85)")
     
     def zoom_out(self):
         factor = 1.15
