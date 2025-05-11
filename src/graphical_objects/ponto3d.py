@@ -224,3 +224,6 @@ class Ponto3D:
             [0, 0, 1, 0],
             [0, 0, 0, 1]
         ], dtype=float)
+    
+    def project_2d(self):
+        return (self.x, self.y)

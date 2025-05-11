@@ -1,7 +1,7 @@
 #logic constants
 
 DEFAULT_SELECTED_OBJECT = "Point"
-POSSIBLE_OBJECTS = ["Point", "Line", "Wireframe", "Curve"]
+POSSIBLE_OBJECTS = ["Point", "Line", "Wireframe", "Curve", "3DObject"]
 AVAILABLE_CURVES = ["Bezier", "B-Spline"]
 
 CURVE_TYPE_BEZIER = "Bezier"
@@ -12,7 +12,7 @@ WINDOW_TO_VIEWPORT_RATIO = 0.95
 
 VIEW_UP_VECTOR = (0, 1, 0)
 VIEW_PLANE_NORMAL = (0, 0, 1)
-VIEW_REFERENCE_POINT = (0, 0, 0)
+VIEW_REFERENCE_POINT = [0, 0, 0]
 
 
 

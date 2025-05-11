@@ -265,10 +265,14 @@ class UserInterface(tk.Tk):
         self.log_message(f"Moved right by {step} pixels")
 
     def move_in(self):
-        pass
+        self.viewport.translate_window(0, 0, -20)
+        self.viewport.update()
+        self.log_message("Moved in by 20 units")
 
     def move_out(self):
-        pass
+        self.viewport.translate_window(0, 0, 20)
+        self.viewport.update()
+        self.log_message("Moved out by 20 units")
 
     def debug(self):
         #debugging purposes
@@ -276,7 +280,7 @@ class UserInterface(tk.Tk):
         # self._app.create_object("Line", "((1, 1), (1, 1079))", "debugWorldAxisY", "blue")
         # self._app.create_object("Line", "(480, 270), (480, 810)", "debugWorldCenterX", "red")
         # self._app.create_object("Line", "(480, 270), (1440, 270)", "debugWorldCenterY", "blue")
-        # self._app.create_object("Wireframe", "(50, 50), (1500, 50), (1500, 800)", "debugWireframe", "green")
+        self._app.create_object("Wireframe", "(50, 50), (1500, 50), (1500, 800)", "debugWireframe", "green")
         # self._app.create_object(
         #     "3DObject",
         #     "(100, 100, 50), (400, 150, 50), (450, 400, 50), (150, 350, 50), (120, 120, 350), (420, 170, 350), (470, 420, 350), (170, 370, 350)",

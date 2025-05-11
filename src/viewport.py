@@ -2,6 +2,8 @@ from tkinter import Canvas
 from display_file import DisplayFile
 import constants as c
 import numpy as np
+from graphical_objects.ponto3d import Ponto3D
+from typing import cast
 
 class Viewport(Canvas):
     def __init__(self, app, master=None, **kwargs):
@@ -43,22 +45,14 @@ class Viewport(Canvas):
 
             print("Requested translation:", dwx, dwy)
 
-            # VUP: eixo Y da janela
             vx, vy, vz = self.vup
 
             angle = -np.arctan2(vx, vy)
-
-            print("Current angle:", np.degrees(angle))
-
-            print("Sin(angle):", np.sin(angle), "Cos(angle):", np.cos(angle))
 
             world_dx = dwx * np.cos(angle) + dwy * np.sin(angle)
 
             world_dy = -dwx * np.sin(angle) + dwy * np.cos(angle)
 
-            print("World dx:", world_dx, "World dy:", world_dy)
-
-            # atualiza as coordenadas da janela
             x_min, y_min = self.window_bounds[0]
             x_max, y_max = self.window_bounds[1]
             x_min += world_dx
@@ -68,7 +62,9 @@ class Viewport(Canvas):
             self.window_bounds[0] = (x_min, y_min)
             self.window_bounds[1] = (x_max, y_max)
 
-            print("New window bounds:", self.window_bounds)
+            self.vrp[0] += dwx
+            self.vrp[1] += dwy
+            self.vrp[2] += dwz
 
             self.update()
 
@@ -137,18 +133,6 @@ class Viewport(Canvas):
 
         self.create_line(cx, cy, end_x, end_y, fill=color, width=2, arrow="last")
 
-    def draw_window_axes(self, length=50):
-        cx = self.winfo_width() / 2
-        cy = self.winfo_height() / 2
-
-        # Eixo Y (VUP)
-        vx, vy = self.vup
-        self.create_line(cx, cy, cx + vx * length, cy - vy * length, fill="red", arrow="last")  # Y
-
-        # Eixo X (perpendicular a VUP)
-        ux, uy = vy, -vx
-        self.create_line(cx, cy, cx + ux * length, cy - uy * length, fill="blue", arrow="last")  # X
-
     def draw_clipping_window(self):
         # Define os limites da janela de clipping
         x_min, y_min = self.window_to_viewport(-1 + self.margin, -1 + self.margin)
@@ -161,91 +145,63 @@ class Viewport(Canvas):
         )
     
     def update_specific_scn(self, obj):
-            #print("---UPDATING SCN---")
 
-        if obj._type == "3DObject" or obj._type == "3DPoint": #or len(obj.get_vertices()) == 8:
+        if obj.get_type() == "3DObject" or obj.get_type() == "3DPoint":
+            
+            vpn = self.vpn / np.linalg.norm(self.vpn)
+            theta_x = np.arctan2(vpn[1], vpn[2])
+            theta_y = np.arctan2(vpn[0], vpn[2])
+            
             segments = []
+
             for segment in obj.segments:
-                # 1. Translada VRP para a origem
-                vrp = self.vrp
-                translated_vertices = [
-                    (x - vrp[0], y - vrp[1], z - vrp[2]) for x, y, z in segment
-                ]
 
-                # 2. Determina VPN e seus ângulos com X e Y
-                vpn = self.vpn / np.linalg.norm(self.vpn)  # Normaliza VPN
-                theta_x = np.arctan2(vpn[1], vpn[2])  # Ângulo com o eixo X
-                theta_y = np.arctan2(vpn[0], vpn[2])  # Ângulo com o eixo Y
+                updated_segment = []
 
-                # 3. Rotaciona o mundo em torno de X e Y para alinhar VPN com o eixo Z
-                # Rotação em torno de X
-                cos_theta_x, sin_theta_x = np.cos(-theta_x), np.sin(-theta_x)
-                rotation_x = np.array([
-                    [1, 0, 0],
-                    [0, cos_theta_x, -sin_theta_x],
-                    [0, sin_theta_x, cos_theta_x]
-                ])
-                rotated_vertices = [np.dot(rotation_x, v) for v in translated_vertices]
+                for point in segment:
 
-                # Rotação em torno de Y
-                cos_theta_y, sin_theta_y = np.cos(-theta_y), np.sin(-theta_y)
-                rotation_y = np.array([
-                    [cos_theta_y, 0, sin_theta_y],
-                    [0, 1, 0],
-                    [-sin_theta_y, 0, cos_theta_y]
-                ])
-                rotated_vertices = [np.dot(rotation_y, v) for v in rotated_vertices]
+                    point = cast(Ponto3D, point)
 
-                # 4. Ignora as coordenadas Z dos objetos
-                projected_vertices = [(x, y) for x, y, z in rotated_vertices]
-                # 5. Normaliza as coordenadas restantes
-                x_min, y_min = self.window_bounds[0][:2]
-                x_max, y_max = self.window_bounds[1][:2]
-                #cx, cy = (x_min + x_max) / 2, (y_min + y_max) / 2
-                window_width, window_height = x_max - x_min, y_max - y_min
+                    updated_point = point.clone()
 
-                normalized_vertices = [
-                    ((x - x_min) / window_width, (y - y_min) / window_height)
-                    for x, y in projected_vertices
-                ]
-                # 6. Aplica o clipping
-                '''
-                clipped_vertices = []
-                for x, y in normalized_vertices:
-                    if 0 + self.margin <= x <= 1 - self.margin and 0 + self.margin <= y <= 1 - self.margin:
-                        clipped_vertices.append((x, y))
-                '''
-                clipped_vertices = normalized_vertices
-                # 7. Transforma para coordenadas da viewport
-                
-                segments.append(clipped_vertices)
+                    updated_point.translate(-self.vrp[0], -self.vrp[1], -self.vrp[2])
+
+                    updated_point.rotate_x(np.degrees(-theta_x))
+                    updated_point.rotate_y(np.degrees(-theta_y))
+
+                    point_2d = updated_point.project_2d()
+
+                    updated_segment.append(point_2d)
+
+                aligned = self.align_z_axis(updated_segment)
+
+                segments.append(self.normalize(aligned))
+
             obj.set_normalized_segments(segments)
             
-        
         else:
+
+            # objetos 2d não precisam de rotação por eixos diferentes do Z
+
             vertices = obj.get_vertices()
-            # localização da window
+
+            aligned = self.align_z_axis(vertices)
+
+            obj.set_scn_vertices(self.normalize(aligned))
+
+    def align_z_axis(self, vertices):
+            
             x_min, y_min = self.window_bounds[0]
             x_max, y_max = self.window_bounds[1]
 
-            # computa o centro da window
             cx = (x_min + x_max) / 2
             cy = (y_min + y_max) / 2
 
-            # tamanho da window
-            window_width = x_max - x_min
-            window_height = y_max - y_min
-
-            #print("vertices in specific scn size: ", len(vertices))
-            #print(vertices)    
             # faz a translação do mundo (nesse caso, 1 objeto) para o centro da window
             translated = [(x - cx, y - cy) for x, y in vertices]
 
-            #print("translated size: ", len(translated))
-
             # o ângulo de rotação é o ângulo entre a VUP e o eixo Y do mundo
-            vx = self.vup[0]
-            vy = self.vup[1]
+            vx, vy, vz = self.vup
             angle = -np.arctan2(vx, vy)
 
             cos_a, sin_a = np.cos(angle), np.sin(angle)
@@ -256,19 +212,20 @@ class Viewport(Canvas):
                 for x, y in translated
             ]
 
-            #print("rotated size: ", len(rotated))
+            return rotated
 
-            # normaliza de volta para scn
-            scn = [
-                ((x + window_width / 2) / window_width,
-                (y + window_height / 2) / window_height)
-                for x, y in rotated
-            ]
+    def normalize(self, vertices):
+        x_min, y_min = self.window_bounds[0][:2]
+        x_max, y_max = self.window_bounds[1][:2]
 
-            #print("scn in update size: ", len(scn))
+        window_width, window_height = x_max - x_min, y_max - y_min
 
-            obj.set_scn_vertices(scn)
+        normalized_vertices = [
+            ((x - x_min) / window_width, (y - y_min) / window_height)
+            for x, y in vertices
+        ]
 
+        return normalized_vertices
     
     def update_all_scn(self):
         for obj in self.display_file.get_objects():
