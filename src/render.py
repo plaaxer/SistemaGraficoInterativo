@@ -10,18 +10,10 @@ class Renderer:
         self._viewport = viewport
         self._application = application
 
+        self._cop = (0, 0, 0)
+
     def render_3d_object(self, obj):
 
-        if self._3dperspective == c.PARALLEL_PROJECTION:
-            self._render_parallel_projection(obj)
-
-        elif self._3dperspective == c.PERSPECTIVE_PROJECTION:
-            self._render_perspective_projection(obj)
-        else:
-            raise ValueError("Invalid projection type")
-
-    def _render_parallel_projection(self, object):
-
         vpn = self._viewport.vpn / np.linalg.norm(self._viewport.vpn)
         theta_x = np.arctan2(vpn[1], vpn[2])
         theta_y = np.arctan2(vpn[0], vpn[2])
@@ -36,16 +28,13 @@ class Renderer:
 
             for point in segment:
 
-                point = cast(Ponto3D, point)
+                if self._3dperspective == c.PARALLEL_PROJECTION:
+                    point_2d = self._render_parallel_projection(obj, theta_x, theta_y)
 
-                updated_point = point.clone()
-
-                updated_point.translate(-self._viewport.vrp[0], -self._viewport.vrp[1], -self._viewport.vrp[2])
-
-                updated_point.rotate_x(np.degrees(-theta_x))
-                updated_point.rotate_y(np.degrees(-theta_y))
-
-                point_2d = updated_point.project_2d()
+                elif self._3dperspective == c.PERSPECTIVE_PROJECTION:
+                    point_2d = self._render_perspective_projection(obj)
+                else:
+                    raise ValueError("Invalid projection type")
 
                 updated_segment.append(point_2d)
 
@@ -55,40 +44,27 @@ class Renderer:
 
         obj.set_normalized_segments(segments)
 
-    def _render_perspective_projection(self, object):
+    def _render_parallel_projection(self, point, theta_x, theta_y):
 
-        vpn = self._viewport.vpn / np.linalg.norm(self._viewport.vpn)
-        theta_x = np.arctan2(vpn[1], vpn[2])
-        theta_y = np.arctan2(vpn[0], vpn[2])
+        point = cast(Ponto3D, point)
+        updated_point = point.clone()
 
-        obj = cast(Object3D, object)
-            
-        segments = []
+        updated_point.translate(-self._viewport.vrp[0], -self._viewport.vrp[1], -self._viewport.vrp[2])
 
-        for segment in obj.segments:
+        updated_point.rotate_x(np.degrees(-theta_x))
+        updated_point.rotate_y(np.degrees(-theta_y))
 
-            updated_segment = []
+        point_2d = updated_point.project_2d()
 
-            for point in segment:
+        return point_2d
 
-                point = cast(Ponto3D, point)
+    def _render_perspective_projection(self, point):
+        
+        point =  cast(Ponto3D, point)
+        updated_point = point.clone()
 
-                updated_point = point.clone()
 
-                updated_point.translate(-self._viewport.vrp[0], -self._viewport.vrp[1], -self._viewport.vrp[2])
 
-                updated_point.rotate_x(np.degrees(-theta_x))
-                updated_point.rotate_y(np.degrees(-theta_y))
-
-                point_2d = updated_point.project_2d()
-
-                updated_segment.append(point_2d)
-
-            aligned = self.align_z_axis(updated_segment)
-
-            segments.append(self.normalize(aligned))
-
-        obj.set_normalized_segments(segments)
 
     def align_z_axis(self, vertices):
             
@@ -127,3 +103,12 @@ class Renderer:
         ]
 
         return normalized_vertices
+    
+    @staticmethod
+    def perspective_matrix(self, focal_distance):
+        return np.array([
+            [1, 0, 0, 0],
+            [0, 1, 0, 0],
+            [0, 0, 1, -1/focal_distance],
+            [0, 0, 0, 1]
+        ], dtype=float)
