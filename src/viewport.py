@@ -3,6 +3,7 @@ from display_file import DisplayFile
 import constants as c
 import numpy as np
 from graphical_objects.ponto3d import Ponto3D
+from render import Renderer
 from typing import cast
 
 class Viewport(Canvas):
@@ -19,6 +20,8 @@ class Viewport(Canvas):
         self.margin = 0.05  # margem da janela de clipping
 
         self.window_angle = 0
+
+        self.renderer = Renderer(self, app)
 
     def draw(self):
         for obj in self.display_file.get_objects():
@@ -148,36 +151,7 @@ class Viewport(Canvas):
 
         if obj.get_type() == "3DObject" or obj.get_type() == "3DPoint":
             
-            vpn = self.vpn / np.linalg.norm(self.vpn)
-            theta_x = np.arctan2(vpn[1], vpn[2])
-            theta_y = np.arctan2(vpn[0], vpn[2])
-            
-            segments = []
-
-            for segment in obj.segments:
-
-                updated_segment = []
-
-                for point in segment:
-
-                    point = cast(Ponto3D, point)
-
-                    updated_point = point.clone()
-
-                    updated_point.translate(-self.vrp[0], -self.vrp[1], -self.vrp[2])
-
-                    updated_point.rotate_x(np.degrees(-theta_x))
-                    updated_point.rotate_y(np.degrees(-theta_y))
-
-                    point_2d = updated_point.project_2d()
-
-                    updated_segment.append(point_2d)
-
-                aligned = self.align_z_axis(updated_segment)
-
-                segments.append(self.normalize(aligned))
-
-            obj.set_normalized_segments(segments)
+            self.renderer.render_3d_object(obj)
             
         else:
 

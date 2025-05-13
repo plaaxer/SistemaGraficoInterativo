@@ -14,7 +14,8 @@ VIEW_UP_VECTOR = (0, 1, 0)
 VIEW_PLANE_NORMAL = (0, 0, 1)
 VIEW_REFERENCE_POINT = [0, 0, 0]
 
-
+PARALLEL_PROJECTION = "parallel"
+PERSPECTIVE_PROJECTION = "perspective"
 
 # ui constants
 

@@ -18,6 +18,7 @@ class GraphicalSystem:
         self._ui.set_viewport(self._viewport)
         self._unique_id = 0
         self._clipper = Clipper()
+        self._3dperspective = c.PARALLEL_PROJECTION
     
     def run(self):
         self._ui.run()
