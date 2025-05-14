@@ -10,7 +10,43 @@ class Renderer:
         self._viewport = viewport
         self._application = application
 
-        self._cop = (0, 0, 0)
+        self._cop = Ponto3D(0, 0, 0)
+
+        self._projection_matrix = None
+
+        self._focal_distance = 500
+
+    def extract_angles_from_vector(vpn):
+        # Assuming vpn is normalized
+        # Get the pitch (rotation around X axis)
+        pitch = np.arcsin(-vpn[1])
+        
+        # Get the yaw (rotation around Y axis)
+        yaw = np.arctan2(vpn[0], vpn[2])
+        
+        # Roll (rotation around Z) typically requires additional info
+        # Often set to 0 or computed from VUP and VPN
+        roll = 0
+        
+        return pitch, yaw, roll
+
+    # Then in your renderer:
+    def recompute(self):
+        cop_translation = self.translation_matrix(-self._cop.x, -self._cop.y, -self._cop.z)
+        
+        # Extract angles from the direction vector
+        pitch, yaw, roll = extract_angles_from_vector(self._viewport.vpn)
+        
+        # Use these angles for rotation matrices
+        rotate_x = Ponto3D.rotate_x_matrix(pitch)
+        rotate_y = Ponto3D.rotate_y_matrix(yaw)
+        rotate_z = Ponto3D.rotate_z_matrix(roll)
+        
+        aligned = rotate_z @ rotate_y @ rotate_x
+        self._projection_matrix = self.perspective_matrix(self._focal_distance) @ aligned @ cop_translation
+
+
+
 
     def render_3d_object(self, obj):
 
@@ -62,6 +98,7 @@ class Renderer:
         
         point =  cast(Ponto3D, point)
         updated_point = point.clone()
+        homogeneous_point = updated_point.to_homogeneous()
 
 
 
@@ -110,5 +147,14 @@ class Renderer:
             [1, 0, 0, 0],
             [0, 1, 0, 0],
             [0, 0, 1, -1/focal_distance],
+            [0, 0, 0, 1]
+        ], dtype=float)
+
+    @staticmethod
+    def translation_matrix(dx, dy, dz):
+        return np.array([
+            [1, 0, 0, dx],
+            [0, 1, 0, dy],
+            [0, 0, 1, dz],
             [0, 0, 0, 1]
         ], dtype=float)
