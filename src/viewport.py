@@ -78,43 +78,27 @@ class Viewport(Canvas):
             self.update()
 
 
-    def rotate_window(self, angle_x=0, angle_y=0, angle_z=0):
+    def rotate_window(self, angle_x=0, angle_y=0, angle_z=0, axis=None):
         """
         Rotaciona a window em torno dos eixos X, Y e Z.
         """
         #print("Requested rotation:", angle_x, angle_y, angle_z)
+        
+        if (angle_x != 0):
+            axis = "PITCH"
+            angle = angle_x
+        elif (angle_y !=0):
+            axis = "YAW"
+            angle = angle_y
+        elif (angle_z != 0):
+            axis = "ROLL"
+            angle = angle_z
+        else:
+            raise ValueError("Invalid rotation axis. Choose 'PITCH', 'YAW', or 'ROLL'.")
 
-        def rotation_matrix(axis, angle):
-            angle = np.radians(angle)
-            c, s = np.cos(angle), np.sin(angle)
-            if axis == 'x':
-                return np.array([[1, 0, 0], [0, c, -s], [0, s, c]])
-            elif axis == 'y':
-                return np.array([[c, 0, s], [0, 1, 0], [-s, 0, c]])
-            elif axis == 'z':
-                return np.array([[c, -s, 0], [s, c, 0], [0, 0, 1]])
+        print("ROTATION: \nSelected axis:", axis, "\nAngle:", angle)
 
-        # Rotação em torno do eixo X
-        if angle_x != 0:
-            rot_x = rotation_matrix('x', angle_x)
-            self.vpn = np.dot(rot_x, self.vpn)
-            self.vup = np.dot(rot_x, self.vup)
-
-        # Rotação em torno do eixo Y
-        if angle_y != 0:
-            rot_y = rotation_matrix('y', angle_y)
-            self.vpn = np.dot(rot_y, self.vpn)
-            self.vup = np.dot(rot_y, self.vup)
-
-        # Rotação em torno do eixo Z
-        if angle_z != 0:
-            rot_z = rotation_matrix('z', angle_z)
-            self.vpn = np.dot(rot_z, self.vpn)
-            self.vup = np.dot(rot_z, self.vup)
-
-        # Normaliza os vetores
-        self.vpn = self.vpn / np.linalg.norm(self.vpn)
-        self.vup = self.vup / np.linalg.norm(self.vup)  
+        self.renderer.rotate(angle, axis)
 
         self.update()
 
