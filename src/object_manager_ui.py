@@ -13,18 +13,18 @@ class ObjectManagerUI(tk.Frame):
         self._user_interface = user_interface
         
         self.object_listbox = tk.Listbox(self, height=10, width=50)
-        self.object_listbox.pack(pady=10)
+        self.object_listbox.pack(side=tk.LEFT, pady=10)
         
         button_frame = tk.Frame(self, bg="gray")
-        button_frame.pack(pady=5)
+        button_frame.pack(side=tk.RIGHT, pady=5)
 
         # Botão Modify Selected
         self.modify_button = tk.Button(button_frame, text="Modify Selected", command=self.modify_selected_object)
-        self.modify_button.pack(side=tk.LEFT, padx=5)
+        self.modify_button.pack(padx=5)
 
         # Botão Delete Selected
         self.delete_button = tk.Button(button_frame, text="Delete Selected", command=self.delete_selected_object)
-        self.delete_button.pack(side=tk.LEFT, padx=5)
+        self.delete_button.pack(padx=5)
     
     def update(self):
         self.object_listbox.delete(0, tk.END)
@@ -94,7 +94,7 @@ class ObjectManagerUI(tk.Frame):
                 factor_entry.pack()
                 input_frame.factor_entry = factor_entry
             else:
-                tk.Label(input_frame, text="Enter Angle:").pack()
+                tk.Label(input_frame, text="Enter Angle (x='x', y='y', z='z'):").pack()
                 angle_entry = tk.Entry(input_frame, width=10)
                 angle_entry.pack()
                 input_frame.angle_entry = angle_entry
@@ -139,6 +139,7 @@ class ObjectManagerUI(tk.Frame):
                     if point:
                         self._app.modify_object(obj_id, "rotate", angle.get(), point.get())
                     else:
+                        print("Angle.get(): ", angle.get())
                         self._app.modify_object(obj_id, "rotate", angle.get())
             popup.destroy()
         

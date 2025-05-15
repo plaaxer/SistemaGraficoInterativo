@@ -14,7 +14,7 @@ class Renderer:
 
         self._projection_matrix = None
 
-        self._focal_distance = 500
+        self._focal_distance = 2000
 
     def recompute(self):
 
@@ -43,6 +43,8 @@ class Renderer:
         print(f"Perspective Matrix: \n{self.perspective_matrix(self._focal_distance)}")
         print(f"Projection Matrix: \n{self._projection_matrix}")	
     
+    # feito utilizando Gemini Flash com prompt:
+    # "Write a function to extract pitch, yaw, and roll angles from a view direction vector (vpn) and an up vector (vup)."
     def extract_angles_from_vector(self, vpn_tuple, vup_tuple):
 
         print("VPN:", vpn_tuple)
@@ -261,18 +263,18 @@ class Renderer:
         updated_point = point.clone()
         homogeneous_point = updated_point.to_homogeneous()
 
-        print("Homogeneous point before projection:", np.array2string(homogeneous_point, precision=3, suppress_small=True))
-        print("Projection matrix:", np.array2string(self._projection_matrix, precision=3, suppress_small=True))
+        #print("Homogeneous point before projection:", np.array2string(homogeneous_point, precision=3, suppress_small=True))
+        #print("Projection matrix:", np.array2string(self._projection_matrix, precision=3, suppress_small=True))
 
         homogeneous_point = self._projection_matrix @ homogeneous_point
 
-        print("Updated homogeneous point:", np.array2string(homogeneous_point, precision=3, suppress_small=True))
+        #print("Updated homogeneous point:", np.array2string(homogeneous_point, precision=3, suppress_small=True))
 
         homogeneous_point /= homogeneous_point[3]
 
         point_2d = (homogeneous_point[0], homogeneous_point[1])
 
-        print(f"Point 2D after projection: {point_2d[0]:.3f}, {point_2d[1]:.3f}")	
+        #print(f"Point 2D after projection: {point_2d[0]:.3f}, {point_2d[1]:.3f}")	
 
         return point_2d
 

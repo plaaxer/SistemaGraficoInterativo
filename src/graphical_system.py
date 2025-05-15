@@ -93,22 +93,31 @@ class GraphicalSystem:
 
         self.reference_object(obj, "escalated")
     
-    def rotate_object(self, obj_id: str, angle: float, point = None):
+    def rotate_object(self, obj_id: str, angle, point = None):
         obj = self._viewport.display_file.get_object_by_id(int(obj_id))
 
         if obj is None:
             self._ui.display_error(f"Erro ao obter objeto com id {obj_id} para rotação")
             return
-        
-        if point is None:
-            point = obj.get_object_center()
+        print(obj.get_type())
+        if obj.get_type() == "3DObject":
+            print("Rotating 3D object")
+            angles = ut.parse_angle(angle)
+            if point is None:
+                obj.rotate(angles[0], angles[1], angles[2])
+            else:
+                obj.rotate(angles[0], angles[1], angles[2], point)
+
         else:
-            point = point[0]
-        
-        new_cords = ut.translate(obj.get_vertices(), (point[0] * -1, point[1] * -1))
-        new_cords = ut.rotate(new_cords, angle)
-        new_cords = ut.translate(new_cords, point)
-        obj.modify(new_cords)
+            if point is None:
+                point = obj.get_object_center()
+            else:
+                point = point[0]
+            
+            new_cords = ut.translate(obj.get_vertices(), (point[0] * -1, point[1] * -1))
+            new_cords = ut.rotate(new_cords, angle)
+            new_cords = ut.translate(new_cords, point)
+            obj.modify(new_cords)
 
         self._viewport.update()
 
@@ -146,11 +155,6 @@ class GraphicalSystem:
             self.escalate_object(obj_id, factor)
 
         elif type == "rotate":
-            try:
-                angle = float(value)
-            except ValueError:
-                self._ui.display_error("Ângulo inválido")
-                return
             if other is not None:
                 try:
                     point = ut.parse_coordinates(other)
@@ -158,17 +162,15 @@ class GraphicalSystem:
                     self._ui.display_error("Ponto inválido")
                     return
             if other is not None:
-                self.rotate_object(obj_id, angle, point)
+                self.rotate_object(obj_id, value, point)
             else:
-                self.rotate_object(obj_id, angle)
+                self.rotate_object(obj_id, value)
 
         self._viewport.update()
     
     def reference_object(self, obj, message=None):
-        if message == "deleted":
-            self._ui.display_info(f"Object {obj.get_type()} with id {obj.get_id()} deleted")
-        elif message == "translated":
-            self._ui.display_info(f"Object {obj.get_type()} with id {obj.get_id()} translated")
+        if message != None:
+            self._ui.display_info(f"Object {obj.get_type()} with id {obj.get_id()} {message}")
         else:
             self._ui.display_info(f"Object {obj.get_type()} created with id {obj.get_id()}")
     

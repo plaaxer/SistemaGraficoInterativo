@@ -9,7 +9,7 @@ class Object3D(Wireframe):
         
         Args:
             segments: Optional list of line segments, where each segment
-                      is a pair (tuple or list) of Ponto3D objects.
+                      is a pair (tuple or list) of Ponto3D objects.[0] newCube (3DObject)
         """
         self._name = name
         self._fill = fill

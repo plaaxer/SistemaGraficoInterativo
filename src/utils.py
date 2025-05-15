@@ -58,6 +58,29 @@ def parse_factor(factor: str) -> str:
     
     return float(factor)
 
+def parse_angle(angle: str) -> Tuple[float, float, float]:
+    if not angle.strip():
+        raise ValueError("Favor inserir ângulos")
+        
+    print("Angles received: ", angle)
+        
+    angle = angle.replace(" ", "")
+    components = angle.split(",")
+    angles = {"x": None, "y": None, "z": None}
+        
+    for component in components:
+        if "=" not in component:
+            raise ValueError("Formato inválido de ângulo: deve ser no formato 'x=valor, y=valor, z=valor'")
+        axis, value = component.split("=")
+        if axis not in angles:
+            raise ValueError(f"Eixo inválido: {axis}. Apenas 'x', 'y' e 'z' são permitidos")
+        try:
+            angles[axis] = float(value.strip('"'))
+        except ValueError:
+            raise ValueError(f"Valor inválido para o eixo {axis}: deve ser um número")
+        
+    return tuple(angles[axis] if angles[axis] is not None else 0.0 for axis in ["x", "y", "z"])
+
 def homogeneo(vertices: List[Tuple[int, int]]) -> List[Tuple[int, int, int]]:
     ##print(vertices)
     return np.array([(x[0], x[1], 1) for x in vertices]).T
