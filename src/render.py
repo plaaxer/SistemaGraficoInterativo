@@ -6,49 +6,208 @@ from typing import cast
 
 class Renderer:
     def __init__(self, viewport, application):
-        self._3dperspective = c.PARALLEL_PROJECTION
+        self._3dperspective = c.PERSPECTIVE_PROJECTION
         self._viewport = viewport
         self._application = application
 
-        self._cop = Ponto3D(0, 0, 0)
+        self._cop = Ponto3D(0, 0, -500)
 
         self._projection_matrix = None
 
         self._focal_distance = 500
 
-    def extract_angles_from_vector(vpn):
-        # Assuming vpn is normalized
-        # Get the pitch (rotation around X axis)
-        pitch = np.arcsin(-vpn[1])
-        
-        # Get the yaw (rotation around Y axis)
-        yaw = np.arctan2(vpn[0], vpn[2])
-        
-        # Roll (rotation around Z) typically requires additional info
-        # Often set to 0 or computed from VUP and VPN
-        roll = 0
-        
-        return pitch, yaw, roll
-
-    # Then in your renderer:
     def recompute(self):
+
+        print("Starting recompute...")
+
         cop_translation = self.translation_matrix(-self._cop.x, -self._cop.y, -self._cop.z)
         
-        # Extract angles from the direction vector
-        pitch, yaw, roll = extract_angles_from_vector(self._viewport.vpn)
+        pitch, yaw, roll = self.extract_angles_from_vector(self._viewport.vpn, self._viewport.vup)
+
+        print(f"Pitch: {np.degrees(pitch)}, Yaw: {np.degrees(yaw)}, Roll: {np.degrees(roll)}")
         
-        # Use these angles for rotation matrices
         rotate_x = Ponto3D.rotate_x_matrix(pitch)
         rotate_y = Ponto3D.rotate_y_matrix(yaw)
         rotate_z = Ponto3D.rotate_z_matrix(roll)
         
         aligned = rotate_z @ rotate_y @ rotate_x
-        self._projection_matrix = self.perspective_matrix(self._focal_distance) @ aligned @ cop_translation
+
+        perspective = self.perspective_matrix(self._focal_distance)
+
+        print(f"Aligned Matrix: \n{aligned}")
+
+        print(f"Translation Matrix: \n{cop_translation}")
+
+        self._projection_matrix = perspective @ (aligned @ cop_translation)
+
+        print(f"Perspective Matrix: \n{self.perspective_matrix(self._focal_distance)}")
+        print(f"Projection Matrix: \n{self._projection_matrix}")	
+    
+    def extract_angles_from_vector(self, vpn_tuple, vup_tuple):
+
+        print("VPN:", vpn_tuple)
+        print("VUP:", vup_tuple)
+
+        """
+        Extracts pitch, yaw, and roll angles from a view direction vector (vpn)
+        and an up vector (vup).
+
+        Args:
+            vpn_tuple: A tuple or list representing the view direction vector (x, y, z).
+                       Assumed to be normalized or will be normalized internally.
+            vup_tuple: A tuple or list representing the camera's up vector (x, y, z).
+                       Assumed to be normalized or will be normalized internally.
+
+        Returns:
+            A tuple containing (pitch, yaw, roll) in radians.
+        """
+        # Convert input tuples to NumPy arrays
+        vpn = np.array(vpn_tuple, dtype=float)
+        vup = np.array(vup_tuple, dtype=float)
+
+        # Ensure vpn and vup are normalized
+        vpn = vpn / np.linalg.norm(vpn)
+        vup = vup / np.linalg.norm(vup)
+
+        # --- Calculate Pitch and Yaw ---
+        # Assuming the camera is initially looking along the negative Z axis
+        # and the up vector is along the positive Y axis.
+        # Yaw is rotation around the global Y-axis.
+        # Pitch is rotation around the camera's local X-axis.
+
+        # Pitch (rotation around X axis)
+        # This is derived from rotating the initial (0, 0, -1) vector.
+        # The Y component of the rotated vector is sin(-pitch).
+        # vpn.y = -sin(pitch) => pitch = -arcsin(vpn.y)
+        # Using -vpn[1] matches the common convention where positive pitch
+        # looks downwards if Y is up and Z is forward/backward. If Y is up
+        # and -Z is forward, positive pitch typically means looking upwards.
+        # Let's stick to the original logic's apparent convention for now.
+        # A more standard approach often involves atan2(vpn.y, sqrt(vpn.x^2 + vpn.z^2))
+        # for pitch relative to the horizontal plane.
+        # However, the original code's approach is valid for a specific rotation order.
+        pitch = np.arcsin(-vpn[1])
+
+        if pitch <=  1e-6 and pitch >= -1e-6:
+            # If pitch is close to zero, we can use atan2 for yaw directly.
+            # This avoids potential issues with arcsin near the limits.
+            # Yaw is the angle in the XZ plane, which is atan2(vpn.x, vpn.z).
+            yaw = np.arctan2(vpn[0], vpn[2])
+            pitch = 0.0
+
+        # Yaw (rotation around Y axis)
+        # This is the angle in the XZ plane.
+        # atan2(x, z) gives the angle from the positive Z axis towards the positive X axis.
+        yaw = np.arctan2(vpn[0], vpn[2])
+
+        if abs(vpn[2]) < 1e-6:
+            # If vpn[2] is close to zero, we are looking straight up or down.
+            # In this case, yaw is undefined. We can set it to zero or handle it differently.
+            # Let's set yaw to zero for this case.
+            yaw = 0.0
+
+        # --- Calculate Roll ---
+        # Roll is rotation around the VPN axis. We need to see how the VUP vector
+        # is rotated around VPN relative to a "true up" vector in the plane
+        # perpendicular to VPN.
+
+        # Calculate the "right" vector perpendicular to the global up (0,1,0) and vpn.
+        # This right vector is in the horizontal plane if vpn is not vertical.
+        global_up = np.array([0, 1, 0])
+        
+        # Handle the case where vpn is close to or aligned with global_up
+        # If vpn is (0, 1, 0) or (0, -1, 0), the cross product with global_up is zero.
+        # In this case, a different global reference (e.g., global_forward) might be needed
+        # to establish a perpendicular vector. Let's use a robust approach.
+        
+        # A stable way to find a perpendicular vector:
+        # If vpn is not close to the Y axis, use cross with global_up.
+        # If vpn is close to the Y axis, use cross with a global_forward (e.g., 0,0,-1).
+        
+        # Threshold to check if vpn is close to the Y axis
+        y_axis_threshold = 1e-4
+        
+        if abs(np.dot(vpn, global_up)) > (1.0 - y_axis_threshold):
+            # VPN is close to the global Y axis, use a different reference vector
+            global_forward = np.array([0, 0, -1])
+            right = np.cross(global_up, global_forward) # This will be along the X axis (1, 0, 0)
+        else:
+             right = np.cross(global_up, vpn)
+             
+        # Normalize the right vector. Handle potential zero vector if vpn is perfectly vertical.
+        right_norm = np.linalg.norm(right)
+        if right_norm < 1e-6: # Handle the edge case where right is a zero vector
+             # This should ideally not happen with the improved logic above,
+             # but as a safeguard, if right is zero, it implies vpn is aligned with global_up.
+             # In this specific scenario, the yaw is undefined by this method, and
+             # we might need a different approach or convention.
+             # For roll, if looking straight up or down, roll is relative to a different axis.
+             # Let's assume for this function's context that vpn is not perfectly vertical.
+             # If it is, pitch is +/- pi/2, and yaw and roll are degenerate.
+             # We can return 0 for yaw and roll in this specific, less common case.
+             if abs(vpn[1]) > 1.0 - 1e-6: # Check if looking straight up or down
+                 # Pitch is +/- pi/2, yaw and roll are effectively zero/undefined by this method
+                 return pitch, 0.0, 0.0
+             else:
+                 # This case should not be reached with the improved right vector calculation
+                 # but as a fallback, if right is zero and vpn is not vertical, something is wrong.
+                 # Return zeros or raise an error depending on desired behavior.
+                 # For now, return zeros.
+                 return pitch, yaw, 0.0 # Keep calculated pitch/yaw, set roll to 0
+        else:
+             right = right / right_norm
 
 
+        # Calculate the "true up" vector for this orientation.
+        # This is a vector perpendicular to vpn and right, forming an orthogonal basis.
+        true_up = np.cross(vpn, right)
+        # true_up is already orthogonal to vpn and right, and if vpn and right are normalized
+        # and orthogonal, true_up is also normalized. However, re-normalizing adds robustness
+        # against floating point errors.
+        true_up = true_up / np.linalg.norm(true_up)
+
+        # Project the camera's current up vector onto the plane perpendicular to VPN.
+        # This projection removes any component of vup that is along vpn.
+        vup_projected = vup - np.dot(vup, vpn) * vpn
+
+        # Handle the case where vup_projected is a zero vector.
+        # This happens if vup is parallel to vpn, which is an invalid camera configuration.
+        vup_projected_norm = np.linalg.norm(vup_projected)
+        if vup_projected_norm < 1e-6:
+            # vup is parallel to vpn, this is an invalid state for determining roll.
+            # Depending on desired behavior, you might raise an error or return a specific value.
+            # Returning 0 roll might be a reasonable default for an invalid up vector.
+            print("Warning: Camera up vector is parallel to view direction.")
+            return pitch, yaw, 0.0 # Keep calculated pitch/yaw, set roll to 0
 
 
-    def render_3d_object(self, obj):
+        vup_projected = vup_projected / vup_projected_norm
+
+        # Calculate the roll angle.
+        # Roll is the angle between true_up and vup_projected in the plane
+        # perpendicular to vpn. We can use atan2 for a signed angle.
+        # To use atan2, we need coordinates of vup_projected in the basis
+        # formed by true_up and right in the plane perpendicular to vpn.
+        # The component of vup_projected along true_up is dot(vup_projected, true_up).
+        # The component of vup_projected along right is dot(vup_projected, right).
+
+        # Using atan2(y, x) where y is the component along the "up" direction
+        # and x is the component along the "right" direction in the view plane.
+        # Our "up" direction in this plane is true_up, and our "right" direction is right.
+        y_component = np.dot(vup_projected, true_up)
+        x_component = np.dot(vup_projected, right)
+
+        roll = np.arctan2(x_component, y_component)
+
+
+        # The original roll calculation using arccos and a sign check is also valid,
+        # but atan2 is generally preferred as it directly gives the signed angle
+        # from -pi to +pi and avoids the need for a separate sign check.
+        # Keeping the atan2 approach which is more direct and robust.
+
+        return pitch, yaw, roll
+
+    def render_3d_object(self, object):
 
         vpn = self._viewport.vpn / np.linalg.norm(self._viewport.vpn)
         theta_x = np.arctan2(vpn[1], vpn[2])
@@ -65,18 +224,20 @@ class Renderer:
             for point in segment:
 
                 if self._3dperspective == c.PARALLEL_PROJECTION:
-                    point_2d = self._render_parallel_projection(obj, theta_x, theta_y)
+                    point_2d = self._render_parallel_projection(point, theta_x, theta_y)
 
                 elif self._3dperspective == c.PERSPECTIVE_PROJECTION:
-                    point_2d = self._render_perspective_projection(obj)
+                    point_2d = self._render_perspective_projection(point)
                 else:
                     raise ValueError("Invalid projection type")
 
                 updated_segment.append(point_2d)
+            
+            # consertar para a outra tbm
+            if self._3dperspective == c.PARALLEL_PROJECTION:
+                updated_segment = self.align_z_axis(updated_segment)
 
-            aligned = self.align_z_axis(updated_segment)
-
-            segments.append(self.normalize(aligned))
+            segments.append(self.normalize(updated_segment))
 
         obj.set_normalized_segments(segments)
 
@@ -100,8 +261,20 @@ class Renderer:
         updated_point = point.clone()
         homogeneous_point = updated_point.to_homogeneous()
 
+        print("Homogeneous point before projection:", np.array2string(homogeneous_point, precision=3, suppress_small=True))
+        print("Projection matrix:", np.array2string(self._projection_matrix, precision=3, suppress_small=True))
 
+        homogeneous_point = self._projection_matrix @ homogeneous_point
 
+        print("Updated homogeneous point:", np.array2string(homogeneous_point, precision=3, suppress_small=True))
+
+        homogeneous_point /= homogeneous_point[3]
+
+        point_2d = (homogeneous_point[0], homogeneous_point[1])
+
+        print(f"Point 2D after projection: {point_2d[0]:.3f}, {point_2d[1]:.3f}")	
+
+        return point_2d
 
     def align_z_axis(self, vertices):
             
@@ -126,7 +299,12 @@ class Renderer:
             for x, y in translated
         ]
 
-        return rotated
+        translated_back = [
+            (x + cx, y + cy)
+            for x, y in rotated
+        ]
+
+        return translated_back
 
     def normalize(self, vertices):
         x_min, y_min = self._viewport.window_bounds[0][:2]
@@ -142,12 +320,12 @@ class Renderer:
         return normalized_vertices
     
     @staticmethod
-    def perspective_matrix(self, focal_distance):
+    def perspective_matrix(focal_distance):
         return np.array([
-            [1, 0, 0, 0],
-            [0, 1, 0, 0],
-            [0, 0, 1, -1/focal_distance],
-            [0, 0, 0, 1]
+            [1, 0, 0,                   0],
+            [0, 1, 0,                   0],
+            [0, 0, 1,                   0],
+            [0, 0, 1/focal_distance, 0]
         ], dtype=float)
 
     @staticmethod

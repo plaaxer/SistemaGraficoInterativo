@@ -235,7 +235,7 @@ class Object3D(Wireframe):
         lines = self.get_normalized_segments()
         
         for i in range(len(lines)):
-                #print(self.in_window)
+
                 if not self.in_window[i]:
                     continue
                 x0, y0 = canvas.window_to_viewport(*lines[i][0])
@@ -245,3 +245,13 @@ class Object3D(Wireframe):
                 x1, y1,
                 fill=self._color
             )
+                # x0, y0 = canvas.window_to_viewport(*lines[i][1])
+                # try:
+                #     x1, y1 = canvas.window_to_viewport(*lines[i + 1][0])
+                #     canvas.create_line(
+                #         x0, y0,
+                #         x1, y1,
+                #         fill=self._color
+                #     )
+                # except IndexError:
+                #     pass

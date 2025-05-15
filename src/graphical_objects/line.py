@@ -6,7 +6,7 @@ class Line(AbstractGraphicalObject):
         super().__init__(name, id, color)
         self.coordinates = coordinates
         self._type = "Line"
-        #print(f"Line {name} created at {coordinates}")
+        ##print(f"Line {name} created at {coordinates}")
 
     def get_object_center(self):
         x_delta = self.coordinates[1][0] - self.coordinates[0][0]

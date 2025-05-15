@@ -4,8 +4,8 @@ class Point(AbstractGraphicalObject):
     def __init__(self, name, id, coordinates: list[tuple[int, int]], color: str, fill: bool):
         super().__init__(name, id, color)
         self.coordinates = coordinates
-        #print(f"Point {name} created at {coordinates}")
-        #print(f"point color: {color}")
+        ##print(f"Point {name} created at {coordinates}")
+        ##print(f"point color: {color}")
 
     def get_object_center(self):
         return self.coordinates

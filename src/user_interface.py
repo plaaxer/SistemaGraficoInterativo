@@ -241,25 +241,25 @@ class UserInterface(tk.Tk):
         self.log_message(f"Info: {message}")
 
     def move_up(self):
-        step = 20
+        step = 100
         self.viewport.translate_window(0, step)
         self.viewport.update()
         self.log_message(f"Moved up by {step} pixels")
     
     def move_down(self):
-        step = 20
+        step = 100
         self.viewport.translate_window(0, -step)
         self.viewport.update()
         self.log_message(f"Moved down by {step} pixels")
     
     def move_left(self):
-        step = 20
+        step = 100
         self.viewport.translate_window(-step, 0)
         self.viewport.update()
         self.log_message(f"Moved left by {step} pixels")
     
     def move_right(self):
-        step = 20
+        step = 100
         self.viewport.translate_window(step, 0)
         self.viewport.update()
         self.log_message(f"Moved right by {step} pixels")
@@ -276,11 +276,11 @@ class UserInterface(tk.Tk):
 
     def debug(self):
         #debugging purposes
-        # self._app.create_object("Line", "((1, 1), (1919, 1))", "debugWorldAxisX", "red")
-        # self._app.create_object("Line", "((1, 1), (1, 1079))", "debugWorldAxisY", "blue")
+        self._app.create_object("Line", "((1, 1), (1919, 1))", "debugWorldAxisX", "green")
+        self._app.create_object("Line", "((1, 1), (1, 1079))", "debugWorldAxisY", "blue")
         # self._app.create_object("Line", "(480, 270), (480, 810)", "debugWorldCenterX", "red")
         # self._app.create_object("Line", "(480, 270), (1440, 270)", "debugWorldCenterY", "blue")
-        self._app.create_object("Wireframe", "(50, 50), (1500, 50), (1500, 800)", "debugWireframe", "green")
+        # self._app.create_object("Wireframe", "(-500, -500), (500, -500), (500, 500), (-500, 500)", "debugWireframe", "green")
         # self._app.create_object(
         #     "3DObject",
         #     "(100, 100, 50), (400, 150, 50), (450, 400, 50), (150, 350, 50), (120, 120, 350), (420, 170, 350), (470, 420, 350), (170, 370, 350)",
@@ -293,21 +293,31 @@ class UserInterface(tk.Tk):
 #     "perspectiveCube",
 #     "blue"
 # )
-        cube_coordinates = (
-    "(600, 600, 550), (900, 600, 550), (900, 900, 550), (600, 900, 550), "  # Bottom face
-    "(600, 600, 850), (600, 900, 850), (900, 900, 850), (900, 600, 850), "  # Top face
-    "(600, 600, 550), (900, 600, 550), (900, 600, 850), (600, 600, 850), "  # Front face (-Z)
-    "(600, 900, 550), (900, 900, 550), (900, 900, 850), (600, 900, 850), "  # Back face (+Z)
-    "(600, 600, 550), (600, 900, 550), (600, 900, 850), (600, 600, 850), "  # Left face (-X)
-    "(900, 600, 550), (900, 900, 550), (900, 900, 850), (900, 600, 850)"   # Right face (+X)
-)
+        #600, 300, 300
+        new_cube_coordinates = (
+    # Bottom face
+    "(600, 600, 600), (900, 600, 600), "
+    "(900, 600, 600), (900, 900, 600), "
+    "(900, 900, 600), (600, 900, 600), "
+    "(600, 900, 600), (600, 600, 600), "
 
-        # Call the create_object function with the new coordinates
+    # Top face
+    "(600, 600, 300), (900, 600, 300), "
+    "(900, 600, 300), (900, 900, 300), "
+    "(900, 900, 300), (600, 900, 300), "
+    "(600, 900, 300), (600, 600, 300), "
+
+    # Vertical edges (connecting bottom and top faces)
+    "(600, 600, 600), (600, 600, 300), "
+    "(900, 600, 600), (900, 600, 300), "
+    "(900, 900, 600), (900, 900, 300), "
+    "(600, 900, 600), (600, 900, 300)"
+)
         self._app.create_object(
             "3DObject",
-            cube_coordinates,
-            "perspectiveCube",
-            "blue"
+            new_cube_coordinates,
+            "newCube",
+            "red"
         )
 
 

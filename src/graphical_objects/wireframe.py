@@ -9,7 +9,7 @@ class Wireframe(AbstractGraphicalObject):
         self._fill = fill
         self._type = "Wireframe"
 
-        print("coordinates size: ", len(self.coordinates))
+        #print("coordinates size: ", len(self.coordinates))
 
     def get_object_center(self):
         x = sum([x for x, _ in self.coordinates]) / len(self.coordinates)
@@ -33,16 +33,16 @@ class Wireframe(AbstractGraphicalObject):
         if not self.in_window:
             return
         
-        print("Wireframe draw method called")
+        #print("Wireframe draw method called")
 
-        print("Wireframe scn vertices: " , self._scn_vertices)
+        #print("Wireframe scn vertices: " , self._scn_vertices)
 
         viewport_coords = [
             canvas.window_to_viewport(*vertex)
             for vertex in self._scn_vertices
         ]
 
-        print("Wireframe viewport coords: ", viewport_coords)
+        #print("Wireframe viewport coords: ", viewport_coords)
 
         if self._fill:
 

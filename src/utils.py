@@ -59,7 +59,7 @@ def parse_factor(factor: str) -> str:
     return float(factor)
 
 def homogeneo(vertices: List[Tuple[int, int]]) -> List[Tuple[int, int, int]]:
-    #print(vertices)
+    ##print(vertices)
     return np.array([(x[0], x[1], 1) for x in vertices]).T
 
 def translate(vertices: List[Tuple[int, int]], shift: Tuple[int, int]) -> List[Tuple[int, int]]:

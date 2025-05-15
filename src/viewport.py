@@ -10,7 +10,9 @@ class Viewport(Canvas):
     def __init__(self, app, master=None, **kwargs):
         super().__init__(master, **kwargs)
         self.display_file = DisplayFile()
-        self._app = app
+
+        from graphical_system import GraphicalSystem
+        self._app = cast(GraphicalSystem, app)
 
         # coordenadas da janela
         self.window_bounds = c.WINDOW_BOUNDS
@@ -46,7 +48,7 @@ class Viewport(Canvas):
     
     def translate_window(self, dwx, dwy, dwz=0):
 
-            print("Requested translation:", dwx, dwy)
+            #print("Requested translation:", dwx, dwy)
 
             vx, vy, vz = self.vup
 
@@ -76,7 +78,7 @@ class Viewport(Canvas):
         """
         Rotaciona a window em torno dos eixos X, Y e Z.
         """
-        print("Requested rotation:", angle_x, angle_y, angle_z)
+        #print("Requested rotation:", angle_x, angle_y, angle_z)
 
         def rotation_matrix(axis, angle):
             angle = np.radians(angle)
@@ -151,6 +153,7 @@ class Viewport(Canvas):
 
         if obj.get_type() == "3DObject" or obj.get_type() == "3DPoint":
             
+            #print("Objeto 3D: ", obj)
             self.renderer.render_3d_object(obj)
             
         else:
@@ -186,7 +189,12 @@ class Viewport(Canvas):
                 for x, y in translated
             ]
 
-            return rotated
+            translated_back = [
+                (x + cx, y + cy)
+                for x, y in rotated
+            ]
+
+            return translated_back
 
     def normalize(self, vertices):
         x_min, y_min = self.window_bounds[0][:2]
@@ -195,7 +203,7 @@ class Viewport(Canvas):
         window_width, window_height = x_max - x_min, y_max - y_min
 
         normalized_vertices = [
-            ((x - x_min) / window_width, (y - y_min) / window_height)
+            ((x-x_min) / window_width, (y-y_min) / window_height)
             for x, y in vertices
         ]
 
@@ -206,6 +214,7 @@ class Viewport(Canvas):
             self.update_specific_scn(obj)
 
     def update(self):
+        self.renderer.recompute()
         self.update_all_scn()
         self._app.clip_objects()
         self.clear()

@@ -45,7 +45,7 @@ class Clipper:
         x2, y2 = line.get_scn_vertices()[1]
         code1 = self.compute_cohen_sutherland_code(x1, y1, x_min, x_max, y_min, y_max)
         code2 = self.compute_cohen_sutherland_code(x2, y2, x_min, x_max, y_min, y_max)
-        #print(f"Line: {line.get_id()}, Code1: {code1}, Code2: {code2}")
+        ##print(f"Line: {line.get_id()}, Code1: {code1}, Code2: {code2}")
 
         accept = False
         while True:
@@ -83,11 +83,11 @@ class Clipper:
                     code2 = self.compute_cohen_sutherland_code(x2, y2, x_min, x_max, y_min, y_max)
 
         if accept:
-            #print(f"Line {line.get_id()} accepted: ({x1}, {y1}) -> ({x2}, {y2})")
+            ##print(f"Line {line.get_id()} accepted: ({x1}, {y1}) -> ({x2}, {y2})")
             line.set_scn_vertices([(x1, y1), (x2, y2)])
             line.in_window = True
         else:
-            #print(f"Line {line.get_id()} rejected")
+            ##print(f"Line {line.get_id()} rejected")
             line.in_window = False
 
     def compute_cohen_sutherland_code(self, x, y, x_min, x_max, y_min, y_max):
@@ -232,8 +232,7 @@ class Clipper:
     def clip_object3d(self, object3d, window):
         segments = object3d.get_normalized_segments()
         for i in range(len(segments)):
-            #print(object3d.in_window)
-            print(i)
+            ##print(object3d.in_window)
             object3d.in_window[i] = False
             x_min = y_min = -1 + self.margin
             x_max = y_max = 1 - self.margin
@@ -241,7 +240,7 @@ class Clipper:
             x2, y2 = segments[i][1]
             code1 = self.compute_cohen_sutherland_code(x1, y1, x_min, x_max, y_min, y_max)
             code2 = self.compute_cohen_sutherland_code(x2, y2, x_min, x_max, y_min, y_max)
-            #print(f"Line: {line.get_id()}, Code1: {code1}, Code2: {code2}")
+            ##print(f"Line: {line.get_id()}, Code1: {code1}, Code2: {code2}")
 
             accept = False
             while True:
@@ -279,9 +278,9 @@ class Clipper:
                         code2 = self.compute_cohen_sutherland_code(x2, y2, x_min, x_max, y_min, y_max)
 
             if accept:
-                #print(f"Line {line.get_id()} accepted: ({x1}, {y1}) -> ({x2}, {y2})")
+                ##print(f"Line {line.get_id()} accepted: ({x1}, {y1}) -> ({x2}, {y2})")
                 segments[i] = [(x1, y1), (x2, y2)]
                 object3d.in_window[i] = True
             else:
-                #print(f"Line {line.get_id()} rejected")
+                ##print(f"Line {line.get_id()} rejected")
                 object3d.in_window[i] = False

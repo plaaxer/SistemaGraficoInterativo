@@ -28,7 +28,7 @@ class ObjectManagerUI(tk.Frame):
     
     def update(self):
         self.object_listbox.delete(0, tk.END)
-        #print("objects: ", self._display_file.get_objects_infos())
+        ##print("objects: ", self._display_file.get_objects_infos())
         for obj in self._display_file.get_objects_infos():
             self.object_listbox.insert(tk.END, obj)
     

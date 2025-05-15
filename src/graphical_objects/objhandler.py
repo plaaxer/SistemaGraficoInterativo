@@ -11,10 +11,10 @@ class ObjHandler:
                 content = file.read()
             return content
         except FileNotFoundError:
-            #print(f"File not found: {file_path}")
+            ##print(f"File not found: {file_path}")
             return None
         except Exception as e:
-            #print(f"Error loading .obj file: {e}")
+            ##print(f"Error loading .obj file: {e}")
             return None
 
     @staticmethod
@@ -101,8 +101,6 @@ class ObjHandler:
                 )
                 color = material_color_map.get(mat_name, "#FFFFFF")
                 app.create_object("3DObject", coords_str, f"Object3D_{i+1}", color)
-            
-            print("Lines:", lines)
 
             # For lines in 3D
             for i, (indices, mat_name) in enumerate(lines):
