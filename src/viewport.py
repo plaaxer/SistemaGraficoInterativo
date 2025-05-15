@@ -71,6 +71,10 @@ class Viewport(Canvas):
             self.vrp[1] += dwy
             self.vrp[2] += dwz
 
+            # todo: move in e move out por enquanto vao para z independente da orientação da window, necessário trocar
+
+            self.renderer.translate_cop(world_dx, world_dy, dwz)
+
             self.update()
 
 

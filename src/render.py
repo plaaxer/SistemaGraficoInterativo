@@ -319,6 +319,12 @@ class Renderer:
 
         return normalized_vertices
     
+    def translate_cop(self, dx, dy, dz):
+
+        self._cop.translate(dx, dy, dz)
+
+        self.recompute()
+    
     @staticmethod
     def perspective_matrix(focal_distance):
         return np.array([

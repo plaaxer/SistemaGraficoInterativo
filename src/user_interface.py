@@ -47,6 +47,16 @@ class UserInterface(tk.Tk):
         
         rotate_button = tk.Button(self.command_panel, command=self.rotate_window_popup, text="Rotate Window")
         rotate_button.pack(pady=10)
+
+        rotate_frame = tk.Frame(self.command_panel, bg="gray")
+        rotate_frame.pack(pady=10)
+        tk.Button(rotate_frame, command=self.yaw_window_positive, text="Yaw").grid(row=0, column=0, padx=5, pady=5)
+        tk.Button(rotate_frame, command=self.pitch_window_positive, text="Pitch").grid(row=0, column=1, padx=5, pady=5)
+        tk.Button(rotate_frame, command=self.roll_window_positive, text="Roll").grid(row=0, column=2, padx=5, pady=5)
+
+        tk.Button(rotate_frame, command=self.yaw_window_negative, text="Yaw -").grid(row=1, column=0, padx=5, pady=5)
+        tk.Button(rotate_frame, command=self.pitch_window_negative, text="Pitch -").grid(row=1, column=1, padx=5, pady=5)
+        tk.Button(rotate_frame, command=self.roll_window_negative, text="Roll -").grid(row=1, column=2, padx=5, pady=5)
         
         move_frame = tk.Frame(self.command_panel, bg="gray")
         move_frame.pack(pady=10)
@@ -265,19 +275,19 @@ class UserInterface(tk.Tk):
         self.log_message(f"Moved right by {step} pixels")
 
     def move_in(self):
-        self.viewport.translate_window(0, 0, -20)
+        self.viewport.translate_window(0, 0, 20)
         self.viewport.update()
         self.log_message("Moved in by 20 units")
 
     def move_out(self):
-        self.viewport.translate_window(0, 0, 20)
+        self.viewport.translate_window(0, 0, -20)
         self.viewport.update()
         self.log_message("Moved out by 20 units")
 
     def debug(self):
         #debugging purposes
-        self._app.create_object("Line", "((1, 1), (1919, 1))", "debugWorldAxisX", "green")
-        self._app.create_object("Line", "((1, 1), (1, 1079))", "debugWorldAxisY", "blue")
+        # self._app.create_object("Line", "((1, 1), (1919, 1))", "debugWorldAxisX", "green")
+        # self._app.create_object("Line", "((1, 1), (1, 1079))", "debugWorldAxisY", "blue")
         # self._app.create_object("Line", "(480, 270), (480, 810)", "debugWorldCenterX", "red")
         # self._app.create_object("Line", "(480, 270), (1440, 270)", "debugWorldCenterY", "blue")
         # self._app.create_object("Wireframe", "(-500, -500), (500, -500), (500, 500), (-500, 500)", "debugWireframe", "green")
@@ -378,3 +388,33 @@ class UserInterface(tk.Tk):
                 popup.destroy()
 
             tk.Button(popup, text="Export", command=on_confirm).pack(pady=10)
+
+    def yaw_window_positive(self):
+        self.viewport.rotate_window(angle_y=10)
+        self.log_message("Yawed window 10 degrees")
+        self.viewport.update()
+
+    def pitch_window_negative(self):
+        self.viewport.rotate_window(angle_x=10)
+        self.log_message("Pitched window 10 degrees")
+        self.viewport.update()
+
+    def roll_window_negative(self):
+        self.viewport.rotate_window(angle_z=10)
+        self.log_message("Rolled window 10 degrees")
+        self.viewport.update()
+
+    def yaw_window_negative(self):
+        self.viewport.rotate_window(angle_y=-10)
+        self.log_message("Yawed window -10 degrees")
+        self.viewport.update()
+
+    def pitch_window_positive(self):
+        self.viewport.rotate_window(angle_x=-10)
+        self.log_message("Pitched window -10 degrees")
+        self.viewport.update()
+
+    def roll_window_positive(self):
+        self.viewport.rotate_window(angle_z=-10)
+        self.log_message("Rolled window -10 degrees")
+        self.viewport.update()
