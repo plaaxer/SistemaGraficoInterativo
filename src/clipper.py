@@ -230,6 +230,7 @@ class Clipper:
         return new_polygon_points
     
     def clip_object3d(self, object3d, window):
+
         segments = object3d.get_normalized_segments()
         for i in range(len(segments)):
             ##print(object3d.in_window)
@@ -240,7 +241,6 @@ class Clipper:
             x2, y2 = segments[i][1]
             code1 = self.compute_cohen_sutherland_code(x1, y1, x_min, x_max, y_min, y_max)
             code2 = self.compute_cohen_sutherland_code(x2, y2, x_min, x_max, y_min, y_max)
-            ##print(f"Line: {line.get_id()}, Code1: {code1}, Code2: {code2}")
 
             accept = False
             while True:
@@ -278,9 +278,9 @@ class Clipper:
                         code2 = self.compute_cohen_sutherland_code(x2, y2, x_min, x_max, y_min, y_max)
 
             if accept:
-                ##print(f"Line {line.get_id()} accepted: ({x1}, {y1}) -> ({x2}, {y2})")
+                print(f"Line {i} accepted: ({x1:.3f}, {y1:.3f}) -> ({x2:.3f}, {y2:.3f})")
                 segments[i] = [(x1, y1), (x2, y2)]
                 object3d.in_window[i] = True
             else:
-                ##print(f"Line {line.get_id()} rejected")
+                print(f"Line {i} rejected: ({x1:.3f}, {y1:.3f}) -> ({x2:.3f}, {y2:.3f})")
                 object3d.in_window[i] = False

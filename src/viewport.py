@@ -48,34 +48,38 @@ class Viewport(Canvas):
     
     def translate_window(self, dwx, dwy, dwz=0):
 
-            #print("Requested translation:", dwx, dwy)
+        vpn = np.array([self.vpn[0], self.vpn[1], self.vpn[2]])
+        vup = np.array([self.vup[0], self.vup[1], self.vup[2]])
+        
+        vpn = vpn / np.linalg.norm(vpn)
+        vup = vup / np.linalg.norm(vup)
+        
+        right_vector = np.cross(vpn, vup)
+        right_vector = right_vector / np.linalg.norm(right_vector)
+        
+        vup = np.cross(right_vector, vpn)
+        vup = vup / np.linalg.norm(vup)
 
-            vx, vy, vz = self.vup
-
-            angle = -np.arctan2(vx, vy)
-
-            world_dx = dwx * np.cos(angle) + dwy * np.sin(angle)
-
-            world_dy = -dwx * np.sin(angle) + dwy * np.cos(angle)
-
-            x_min, y_min = self.window_bounds[0]
-            x_max, y_max = self.window_bounds[1]
-            x_min += world_dx
-            y_min += world_dy
-            x_max += world_dx
-            y_max += world_dy
-            self.window_bounds[0] = (x_min, y_min)
-            self.window_bounds[1] = (x_max, y_max)
-
-            self.vrp[0] += dwx
-            self.vrp[1] += dwy
-            self.vrp[2] += dwz
-
-            # todo: move in e move out por enquanto vao para z independente da orientação da window, necessário trocar
-
-            self.renderer.translate_cop(world_dx, world_dy, dwz)
-
-            self.update()
+        world_translation = right_vector * dwx + vup * dwy + vpn * dwz
+        
+        world_dx, world_dy, world_dz = world_translation
+        
+        x_min, y_min = self.window_bounds[0]
+        x_max, y_max = self.window_bounds[1]
+        x_min += world_dx
+        y_min += world_dy
+        x_max += world_dx
+        y_max += world_dy
+        self.window_bounds[0] = (x_min, y_min)
+        self.window_bounds[1] = (x_max, y_max)
+        
+        self.vrp[0] += world_dx
+        self.vrp[1] += world_dy
+        self.vrp[2] += world_dz
+        
+        self.renderer.translate_cop(world_dx, world_dy, world_dz)
+        
+        self.update()
 
 
     def rotate_window(self, angle_x=0, angle_y=0, angle_z=0):
@@ -116,6 +120,10 @@ class Viewport(Canvas):
         self.vpn = self.vpn / np.linalg.norm(self.vpn)
         self.vup = self.vup / np.linalg.norm(self.vup)  
 
+        self.update()
+
+    def switch_lens_perspective(self):
+        self.renderer.switch_focal_distance()
         self.update()
 
     def zoom(self, factor):

@@ -1,4 +1,7 @@
 from graphical_objects.abstract_graphical_object import AbstractGraphicalObject
+
+import typing
+
 class ObjHandler:
     # Classe feita com auxílio de IA (Claude), dada a natureza extensiva de parsing
     # Supports both 2D and 3D .obj files
@@ -18,103 +21,158 @@ class ObjHandler:
             return None
 
     @staticmethod
-    def process_obj_data(obj_data, app):
-        """Processes the loaded .obj data and creates the objects themselves."""
-        vertices = []
-        lines = [] 
-        wireframes = [] 
-        faces = []  # For 3D objects
-        current_material = None
-        is_3d = False
+    def process_obj_data(obj_data: str, app):
+        """
+        Processes the loaded .obj data (string) and creates a 3D wireframe
+        object using the application's create_object method.
 
-        # Material color mapping
-        material_color_map = {
-            "red": "#FF0000",
-            "green": "#00FF00",
-            "blue": "#0000FF",
-            "yellow": "#FFFF00",
-            "cyan": "#00FFFF",
-            "magenta": "#FF00FF",
-            "white": "#FFFFFF",
-            "black": "#000000",
-        }
+        It extracts vertices ('v') and defines segments based on face ('f') definitions.
+        Handles comments ('#') in the OBJ data.
 
-        for line in obj_data.strip().splitlines():
-            line = line.strip()
-            if not line or line.startswith('#'):
+        Args:
+            obj_data: A string containing the content of an .obj file.
+            app: The application object with a create_object method.
+        """
+        vertices: typing.List[typing.Tuple[float, float, float]] = []
+        segments_set: typing.Set[typing.Tuple[typing.Tuple[float, float, float], typing.Tuple[float, float, float]]] = set()
+
+        lines = obj_data.strip().split('\n')
+
+        print("Processing OBJ data...")
+
+        # Primeiro, leia todos os vértices
+        # Processa todas as linhas, mas só age nas que começam com 'v'
+        for line in lines:
+            # Ignora ou remove a parte do comentário (#...)
+            comment_index = line.find('#')
+            if comment_index != -1:
+                line = line[:comment_index].strip()
+            else:
+                line = line.strip()
+
+            parts = line.split()
+            if not parts: # Ignora linhas vazias após remover comentário
                 continue
-            
-            if line.startswith('v '):
-                parts = line.split()
-                if len(parts) >= 4:  # 3D vertex (x, y, z)
-                    is_3d = True
+
+            prefix = parts[0]
+
+            if prefix == 'v':
+                # Processa linha de vértice: v x y z
+                try:
                     x, y, z = float(parts[1]), float(parts[2]), float(parts[3])
                     vertices.append((x, y, z))
-                else:  # 2D vertex (x, y)
-                    x, y = float(parts[1]), float(parts[2])
-                    vertices.append((x, y))
-            
-            elif line.startswith('usemtl '):
-                current_material = line.split()[1]
-            
-            elif line.startswith('l '):
-                indices = list(map(int, line.split()[1:]))
-                lines.append((indices, current_material))
-            
-            elif line.startswith('f '):
-                indices = [int(v.split('/')[0]) for v in line.split()[1:]]
-                if is_3d:
-                    faces.append((indices, current_material))
-                else:
-                    wireframes.append((indices, current_material))
+                except (ValueError, IndexError):
+                    print(f"Warning: Skipping malformed vertex line: {line}")
+                    continue
 
-        # Create 2D lines if not 3D
-        if not is_3d:
-            for i, (indices, mat_name) in enumerate(lines):
-                for j in range(len(indices) - 1):
-                    x1, y1 = vertices[indices[j] - 1]
-                    x2, y2 = vertices[indices[j + 1] - 1]
-                    coords_str = f"({x1}, {y1}), ({x2}, {y2})"
-                    color = material_color_map.get(mat_name, "#FFFFFF")
-                    app.create_object("Line", coords_str, f"Line_{i+1}_{j+1}", color)
+        print(f"Found {len(vertices)} vertices.")
+        if not vertices:
+            print("Error: No vertices found in OBJ data.")
+            return # Não podemos processar sem vértices
 
-            # Create 2D wireframes
-            for i, (indices, mat_name) in enumerate(wireframes):
-                coords_str = ", ".join(
-                    f"({vertices[idx - 1][0]}, {vertices[idx - 1][1]})" for idx in indices
-                )
-                color = material_color_map.get(mat_name, "#FFFFFF")
-                app.create_object("Wireframe", coords_str, f"Wireframe_{i+1}", color)
-        
+        # Agora, processe as faces para extrair as arestas
+        # Percorre as linhas novamente, agindo nas que começam com 'f'
+        for line in lines:
+            # Ignora ou remove a parte do comentário (#...)
+            comment_index = line.find('#')
+            if comment_index != -1:
+                line = line[:comment_index].strip()
+            else:
+                line = line.strip()
+
+            parts = line.split()
+            if not parts: # Ignora linhas vazias após remover comentário
+                continue
+
+            prefix = parts[0]
+
+            if prefix == 'f':
+                # Processa linha de face: f v1 v2 v3 ...
+                # Índices são baseados em 1. Podem ter o formato v/vt/vn
+                try:
+                    # Obtém apenas o índice do vértice (ignora /vt e /vn)
+                    face_indices_str = parts[1:]
+                    
+                    # Verifica se há índices válidos na linha 'f'
+                    if not face_indices_str:
+                        print(f"Warning: Skipping face line with no vertex indices: {line}")
+                        continue
+
+                    # Converte strings de índice para inteiros
+                    face_indices = [int(p.split('/')[0]) for p in face_indices_str if p.split('/')[0].isdigit()]
+
+                    # Uma face precisa de pelo menos 2 vértices para definir um segmento
+                    if len(face_indices) < 2:
+                         print(f"Warning: Skipping face with less than 2 valid vertex indices: {line}")
+                         continue
+
+                    # Cria segmentos entre vértices consecutivos na face, incluindo fechar o loop
+                    num_indices = len(face_indices)
+                    for i in range(num_indices):
+                        # Índices do vértice atual e do próximo (com wrap-around para fechar)
+                        idx1_obj = face_indices[i]
+                        idx2_obj = face_indices[(i + 1) % num_indices] # % num_indices para fechar o ciclo
+
+                        # Converte índices .obj (base 1) para índices da lista Python (base 0)
+                        idx1_list = idx1_obj - 1
+                        idx2_list = idx2_obj - 1
+
+                        # Verifica se os índices são válidos na lista de vértices
+                        if idx1_list < 0 or idx1_list >= len(vertices) or idx2_list < 0 or idx2_list >= len(vertices):
+                             print(f"Warning: Skipping segment due to out-of-bounds vertex index: {idx1_obj} or {idx2_obj} (Total vertices: {len(vertices)}) from line: {line}")
+                             continue
+
+                        # Obtém as coordenadas dos vértices
+                        v1_coords = vertices[idx1_list]
+                        v2_coords = vertices[idx2_list]
+
+                        # Cria uma representação canônica da aresta (tupla de coordenadas, ordenada)
+                        canonical_segment = tuple(sorted((v1_coords, v2_coords)))
+
+                        segments_set.add(canonical_segment)
+
+                except (ValueError, IndexError):
+                     # Esta exceção agora deve ser mais rara, pois tratamos comentários e falta de índices
+                     print(f"Warning: Skipping face line due to unexpected format error: {line}")
+                     continue
+
+
+            # Ignora outros tipos de linhas (vn, vt, usemtl, s, etc.)
+
+        # Agora, formatar os segmentos encontrados no formato string requerido
+        segments_string_parts = []
+        for seg_point1, seg_point2 in segments_set:
+             # Formata as coordenadas com precisão para floating point
+             segments_string_parts.append(f"({seg_point1[0]:.6f}, {seg_point1[1]:.6f}, {seg_point1[2]:.6f}), ({seg_point2[0]:.6f}, {seg_point2[1]:.6f}, {seg_point2[2]:.6f}), ")
+
+        # Junta as partes da string e remove a vírgula e espaço finais ", "
+        segments_string = "".join(segments_string_parts).rstrip(", ")
+
+        print(f"Extracted {len(segments_set)} unique segments.")
+
+        if not segments_string:
+            print("Warning: No valid segments found for creating the object.")
+            return # Não cria um objeto vazio
+
+        # Cria o objeto usando o método da aplicação
+        object_name = "LoadedObjModel" # Nome padrão
+        object_color = "blue"      # Cor padrão
+
+        print(f"Creating object '{object_name}' with {len(segments_set)} segments.")
+
+        if hasattr(app, 'create_object') and callable(app.create_object):
+             try:
+                 app.create_object(
+                     "3DObject",          # Tipo de objeto
+                     segments_string,     # A string de pares de coordenadas
+                     object_name,         # Nome
+                     object_color         # Cor
+                 )
+                 print("OBJ object processing complete. Object created successfully.")
+             except Exception as e:
+                 print(f"Error calling app.create_object: {e}")
         else:
-            # Create 3D objects
-            # For faces (3D objects)
-            for i, (indices, mat_name) in enumerate(faces):
-                coords = []
-                for idx in indices:
-                    x, y, z = vertices[idx - 1]
-                    coords.append((x, y, z))
-                
-                # Format coordinates string for 3D object
-                coords_str = ", ".join(
-                    f"({x}, {y}, {z})" for x, y, z in coords
-                )
-                color = material_color_map.get(mat_name, "#FFFFFF")
-                app.create_object("3DObject", coords_str, f"Object3D_{i+1}", color)
-
-            # For lines in 3D
-            for i, (indices, mat_name) in enumerate(lines):
-                coords = []
-                for idx in indices:
-                    x, y, z = vertices[idx - 1]
-                    coords.append((x, y, z))
-                
-                # Create line segments for 3D lines
-                coords_str = ", ".join(
-                    f"({x}, {y}, {z})" for x, y, z in coords
-                )
-                color = material_color_map.get(mat_name, "#FFFFFF")
-                app.create_object("3DObject", coords_str, f"Line3D_{i+1}", color)
+             print("Error: Provided 'app' object does not have a callable 'create_object' method.")
 
     @staticmethod
     def save_obj(file_path, obj: AbstractGraphicalObject):

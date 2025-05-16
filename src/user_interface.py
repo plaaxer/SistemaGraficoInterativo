@@ -43,10 +43,11 @@ class UserInterface(tk.Tk):
         first_frame.pack(pady=10)
         tk.Button(first_frame, command=self.object_creator_popup, text="Create Object").pack(side=tk.LEFT, padx=5)
         tk.Button(first_frame, command=self.switch_clipping_algorithm, text="Switch Clipping Algorithm").pack(side=tk.LEFT, padx=5)
-        tk.Button(first_frame, command=self.debug, text="Debug").pack(side=tk.LEFT, padx=5)
+        tk.Button(first_frame, command=self.switch_lens_perspective, text="Switch Lens Perspective").pack(side=tk.LEFT, padx=5)
         
         rotate_button = tk.Button(self.command_panel, command=self.rotate_window_popup, text="Rotate Window")
         rotate_button.pack(pady=10)
+        tk.Button(first_frame, command=self.debug, text="Debug").pack(side=tk.LEFT, padx=5)
 
         rotate_frame = tk.Frame(self.command_panel, bg="gray")
         rotate_frame.pack(pady=10)
@@ -264,23 +265,23 @@ class UserInterface(tk.Tk):
     
     def move_left(self):
         step = 100
-        self.viewport.translate_window(-step, 0)
+        self.viewport.translate_window(step, 0)
         self.viewport.update()
         self.log_message(f"Moved left by {step} pixels")
     
     def move_right(self):
         step = 100
-        self.viewport.translate_window(step, 0)
+        self.viewport.translate_window(-step, 0)
         self.viewport.update()
         self.log_message(f"Moved right by {step} pixels")
 
     def move_in(self):
-        self.viewport.translate_window(0, 0, 20)
+        self.viewport.translate_window(0, 0, 100)
         self.viewport.update()
         self.log_message("Moved in by 20 units")
 
     def move_out(self):
-        self.viewport.translate_window(0, 0, -20)
+        self.viewport.translate_window(0, 0, -100)
         self.viewport.update()
         self.log_message("Moved out by 20 units")
 
@@ -305,19 +306,19 @@ class UserInterface(tk.Tk):
 # )
         #600, 300, 300
         new_cube_coordinates = (
-    # Bottom face
+
     "(600, 600, 600), (900, 600, 600), "
     "(900, 600, 600), (900, 900, 600), "
     "(900, 900, 600), (600, 900, 600), "
     "(600, 900, 600), (600, 600, 600), "
 
-    # Top face
+
     "(600, 600, 300), (900, 600, 300), "
     "(900, 600, 300), (900, 900, 300), "
     "(900, 900, 300), (600, 900, 300), "
     "(600, 900, 300), (600, 600, 300), "
 
-    # Vertical edges (connecting bottom and top faces)
+
     "(600, 600, 600), (600, 600, 300), "
     "(900, 600, 600), (900, 600, 300), "
     "(900, 900, 600), (900, 900, 300), "
@@ -328,6 +329,58 @@ class UserInterface(tk.Tk):
             new_cube_coordinates,
             "newCube",
             "red"
+        )
+        #         # Define the coordinates for the edges of the new rectangular prism
+        # # Each pair of coordinates represents a segment (an edge)
+        # new_prism_coordinates = (
+        #     # Bottom face
+        #     "(100, 100, 100), (300, 100, 100), "
+        #     "(300, 100, 100), (300, 400, 100), "
+        #     "(300, 400, 100), (100, 400, 100), "
+        #     "(100, 400, 100), (100, 100, 100), "
+
+        #     # Top face
+        #     "(100, 100, 500), (300, 100, 500), "
+        #     "(300, 100, 500), (300, 400, 500), "
+        #     "(300, 400, 500), (100, 400, 500), "
+        #     "(100, 400, 500), (100, 100, 500), "
+
+        #     # Vertical edges connecting bottom and top faces
+        #     "(100, 100, 100), (100, 100, 500), "
+        #     "(300, 100, 100), (300, 100, 500), "
+        #     "(300, 400, 100), (300, 400, 500), "
+        #     "(100, 400, 100), (100, 400, 500)"
+        # )
+
+        # # Assuming self._app is your application object with a create_object method
+        # # Create the new 3D object using the defined coordinates
+        # self._app.create_object(
+        #     "3DObject",         # Object type
+        #     new_prism_coordinates, # The coordinates defining the segments
+        #     "newPrism",         # A name for the object
+        #     "blue"              # The color of the object
+        # )
+        # Define the coordinates for the edges of a tetrahedron
+# Each pair of coordinates represents a segment (an edge)
+        new_tetrahedron_coordinates = (
+            # Base triangle edges (on the XY plane for simplicity)
+            "(100, 100, 0), (400, 100, 0), "
+            "(400, 100, 0), (250, 350, 0), "
+            "(250, 350, 0), (100, 100, 0), "
+
+            # Edges connecting base vertices to the apex
+            "(100, 100, 0), (250, 200, 400), " # Connect base vertex 1 to apex
+            "(400, 100, 0), (250, 200, 400), " # Connect base vertex 2 to apex
+            "(250, 350, 0), (250, 200, 400)"  # Connect base vertex 3 to apex
+        )
+
+        # Assuming self._app is your application object with a create_object method
+        # Create the new 3D object using the defined coordinates
+        self._app.create_object(
+            "3DObject",           # Object type
+            new_tetrahedron_coordinates, # The coordinates defining the segments
+            "newTetrahedron",     # A name for the object
+            "green"               # The color of the object
         )
 
 
@@ -418,3 +471,7 @@ class UserInterface(tk.Tk):
         self.viewport.rotate_window(angle_z=-10)
         self.log_message("Rolled window -10 degrees")
         self.viewport.update()
+
+    def switch_lens_perspective(self):
+        self.viewport.switch_lens_perspective()
+        self.log_message("Switched lens perspective")

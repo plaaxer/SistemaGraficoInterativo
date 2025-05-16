@@ -3,6 +3,7 @@ import numpy as np
 from graphical_objects.ponto3d import Ponto3D
 from graphical_objects.objeto3d import Object3D
 from typing import cast
+import math
 
 class Renderer:
     def __init__(self, viewport, application):
@@ -10,11 +11,14 @@ class Renderer:
         self._viewport = viewport
         self._application = application
 
-        self._cop = Ponto3D(0, 0, -500)
+        self._cop = Ponto3D(0, 0, -800)
 
         self._projection_matrix = None
 
-        self._focal_distance = 2000
+        self._focal_distance = 500
+
+        self._near_plane = 10.0
+        self._far_plane = 5000.0
 
     def recompute(self):
 
@@ -23,6 +27,15 @@ class Renderer:
         cop_translation = self.translation_matrix(-self._cop.x, -self._cop.y, -self._cop.z)
         
         pitch, yaw, roll = self.extract_angles_from_vector(self._viewport.vpn, self._viewport.vup)
+
+        # para os casos de yaw = 90 e yaw = 270, pode ser que o método acima retorne 0. verificar
+        # tais edge cases
+        if abs(self._viewport.vpn[2]) < 0.001 and abs(self._viewport.vpn[0]) > 0.9:
+            if self._viewport.vpn[0] > 0:
+                yaw = math.pi/2
+            else:
+                yaw = 3*math.pi/2
+            print(f"Edge case detected! Setting yaw to {math.degrees(yaw):.2f} degrees")
 
         print(f"Pitch: {np.degrees(pitch)}, Yaw: {np.degrees(yaw)}, Roll: {np.degrees(roll)}")
         
@@ -38,12 +51,151 @@ class Renderer:
 
         print(f"Translation Matrix: \n{cop_translation}")
 
-        self._projection_matrix = perspective @ (aligned @ cop_translation)
+        self._view_matrix = aligned @ cop_translation
+
+        self._projection_matrix = perspective @ (self._view_matrix)
 
         print(f"Perspective Matrix: \n{self.perspective_matrix(self._focal_distance)}")
         print(f"Projection Matrix: \n{self._projection_matrix}")	
+
+    def render_3d_object(self, object):
+
+        vpn = self._viewport.vpn / np.linalg.norm(self._viewport.vpn)
+        theta_x = np.arctan2(vpn[1], vpn[2])
+        theta_y = np.arctan2(vpn[0], vpn[2])
+
+        obj = cast(Object3D, object)
+            
+        segments = []
+
+        for segment in obj.segments:
+
+            updated_segment = []
+
+            clipped_segment = False
+
+            for point in segment:
+
+                if self._3dperspective == c.PARALLEL_PROJECTION:
+                    point_2d = self._render_parallel_projection(point, theta_x, theta_y)
+
+                elif self._3dperspective == c.PERSPECTIVE_PROJECTION:
+                    point_2d = self._render_perspective_projection(point)
+                else:
+                    raise ValueError("Invalid projection type")
+                
+                if point_2d is None:
+                    clipped_segment = True
+                    break
+
+                updated_segment.append(point_2d)
+            
+            if clipped_segment:
+                print("Segment clipped, skipping...")
+                continue
+
+            # consertar para a outra tbm
+            if self._3dperspective == c.PARALLEL_PROJECTION:
+                updated_segment = self.align_z_axis(updated_segment)
+
+            segments.append(self.normalize(updated_segment))
+
+        obj.set_normalized_segments(segments)
+
+    def _render_parallel_projection(self, point, theta_x, theta_y):
+
+        point = cast(Ponto3D, point)
+        updated_point = point.clone()
+
+        updated_point.translate(-self._viewport.vrp[0], -self._viewport.vrp[1], -self._viewport.vrp[2])
+
+        updated_point.rotate_x(np.degrees(-theta_x))
+        updated_point.rotate_y(np.degrees(-theta_y))
+
+        point_2d = updated_point.project_2d()
+
+        return point_2d
+
+    def _render_perspective_projection(self, point):
+
+        point =  cast(Ponto3D, point)
+        updated_point = point.clone()
+
+        #updated_point.translate(-self._cop.x, -self._cop.y, -self._cop.z)
+
+        homogeneous_point = updated_point.to_homogeneous()
+
+        #print("Homogeneous point before projection:", np.array2string(homogeneous_point, precision=3, suppress_small=True))
+        #print("Projection matrix:", np.array2string(self._projection_matrix, precision=3, suppress_small=True))
+
+        camera_point = self._view_matrix @ homogeneous_point
+
+        w_camera = camera_point[3]
+
+        if camera_point[2] < self._near_plane * w_camera or camera_point[2] > self._far_plane * w_camera:
+            print(f"Point is outside the clipping range: {camera_point[2]:.3f}")
+            return None
+
+        clipped_point = self._projection_matrix @ homogeneous_point
+
+        clipped_point /= clipped_point[3]
+
+        point_2d = (clipped_point[0], clipped_point[1])
+
+        print(f"Point 2D after projection: {point_2d[0]:.3f}, {point_2d[1]:.3f}")
+
+        return point_2d
+
+    def align_z_axis(self, vertices):
+            
+        x_min, y_min = self._viewport.window_bounds[0]
+        x_max, y_max = self._viewport.window_bounds[1]
+
+        cx = (x_min + x_max) / 2
+        cy = (y_min + y_max) / 2
+
+        # faz a translação do mundo (nesse caso, 1 objeto) para o centro da window
+        translated = [(x - cx, y - cy) for x, y in vertices]
+
+        # o ângulo de rotação é o ângulo entre a VUP e o eixo Y do mundo
+        vx, vy, vz = self._viewport.vup
+        angle = -np.arctan2(vx, vy)
+
+        cos_a, sin_a = np.cos(angle), np.sin(angle)
+
+        # rotaciona o mundo por -θ para alinhar o VUP com o eixo Y
+        rotated = [
+            (x * cos_a - y * sin_a, x * sin_a + y * cos_a)
+            for x, y in translated
+        ]
+
+        translated_back = [
+            (x + cx, y + cy)
+            for x, y in rotated
+        ]
+
+        return translated_back
+
+    def normalize(self, vertices):
+        x_min, y_min = self._viewport.window_bounds[0][:2]
+        x_max, y_max = self._viewport.window_bounds[1][:2]
+
+        window_width, window_height = x_max - x_min, y_max - y_min
+
+        normalized_vertices = [
+            ((x - x_min) / window_width, (y - y_min) / window_height)
+            for x, y in vertices
+        ]
+
+        return normalized_vertices
     
-    # feito utilizando Gemini Flash com prompt:
+    def translate_cop(self, dx, dy, dz):
+
+        self._cop.translate(dx, dy, dz)
+
+        self.recompute()
+
+        # UTILIZAÇÃO DE IA: feito utilizando Gemini Flash com prompt:
     # "Write a function to extract pitch, yaw, and roll angles from a view direction vector (vpn) and an up vector (vup)."
     def extract_angles_from_vector(self, vpn_tuple, vup_tuple):
 
@@ -208,124 +360,12 @@ class Renderer:
         # Keeping the atan2 approach which is more direct and robust.
 
         return pitch, yaw, roll
-
-    def render_3d_object(self, object):
-
-        vpn = self._viewport.vpn / np.linalg.norm(self._viewport.vpn)
-        theta_x = np.arctan2(vpn[1], vpn[2])
-        theta_y = np.arctan2(vpn[0], vpn[2])
-
-        obj = cast(Object3D, object)
-            
-        segments = []
-
-        for segment in obj.segments:
-
-            updated_segment = []
-
-            for point in segment:
-
-                if self._3dperspective == c.PARALLEL_PROJECTION:
-                    point_2d = self._render_parallel_projection(point, theta_x, theta_y)
-
-                elif self._3dperspective == c.PERSPECTIVE_PROJECTION:
-                    point_2d = self._render_perspective_projection(point)
-                else:
-                    raise ValueError("Invalid projection type")
-
-                updated_segment.append(point_2d)
-            
-            # consertar para a outra tbm
-            if self._3dperspective == c.PARALLEL_PROJECTION:
-                updated_segment = self.align_z_axis(updated_segment)
-
-            segments.append(self.normalize(updated_segment))
-
-        obj.set_normalized_segments(segments)
-
-    def _render_parallel_projection(self, point, theta_x, theta_y):
-
-        point = cast(Ponto3D, point)
-        updated_point = point.clone()
-
-        updated_point.translate(-self._viewport.vrp[0], -self._viewport.vrp[1], -self._viewport.vrp[2])
-
-        updated_point.rotate_x(np.degrees(-theta_x))
-        updated_point.rotate_y(np.degrees(-theta_y))
-
-        point_2d = updated_point.project_2d()
-
-        return point_2d
-
-    def _render_perspective_projection(self, point):
-        
-        point =  cast(Ponto3D, point)
-        updated_point = point.clone()
-        homogeneous_point = updated_point.to_homogeneous()
-
-        #print("Homogeneous point before projection:", np.array2string(homogeneous_point, precision=3, suppress_small=True))
-        #print("Projection matrix:", np.array2string(self._projection_matrix, precision=3, suppress_small=True))
-
-        homogeneous_point = self._projection_matrix @ homogeneous_point
-
-        #print("Updated homogeneous point:", np.array2string(homogeneous_point, precision=3, suppress_small=True))
-
-        homogeneous_point /= homogeneous_point[3]
-
-        point_2d = (homogeneous_point[0], homogeneous_point[1])
-
-        #print(f"Point 2D after projection: {point_2d[0]:.3f}, {point_2d[1]:.3f}")	
-
-        return point_2d
-
-    def align_z_axis(self, vertices):
-            
-        x_min, y_min = self._viewport.window_bounds[0]
-        x_max, y_max = self._viewport.window_bounds[1]
-
-        cx = (x_min + x_max) / 2
-        cy = (y_min + y_max) / 2
-
-        # faz a translação do mundo (nesse caso, 1 objeto) para o centro da window
-        translated = [(x - cx, y - cy) for x, y in vertices]
-
-        # o ângulo de rotação é o ângulo entre a VUP e o eixo Y do mundo
-        vx, vy, vz = self._viewport.vup
-        angle = -np.arctan2(vx, vy)
-
-        cos_a, sin_a = np.cos(angle), np.sin(angle)
-
-        # rotaciona o mundo por -θ para alinhar o VUP com o eixo Y
-        rotated = [
-            (x * cos_a - y * sin_a, x * sin_a + y * cos_a)
-            for x, y in translated
-        ]
-
-        translated_back = [
-            (x + cx, y + cy)
-            for x, y in rotated
-        ]
-
-        return translated_back
-
-    def normalize(self, vertices):
-        x_min, y_min = self._viewport.window_bounds[0][:2]
-        x_max, y_max = self._viewport.window_bounds[1][:2]
-
-        window_width, window_height = x_max - x_min, y_max - y_min
-
-        normalized_vertices = [
-            ((x - x_min) / window_width, (y - y_min) / window_height)
-            for x, y in vertices
-        ]
-
-        return normalized_vertices
     
-    def translate_cop(self, dx, dy, dz):
-
-        self._cop.translate(dx, dy, dz)
-
-        self.recompute()
+    def switch_focal_distance(self):
+        if self._focal_distance == 500:
+            self._focal_distance = 100
+        else:
+            self._focal_distance = 500
     
     @staticmethod
     def perspective_matrix(focal_distance):
