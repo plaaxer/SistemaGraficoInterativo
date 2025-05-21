@@ -4,6 +4,7 @@ from graphical_objects.line import Line
 from graphical_objects.wireframe import Wireframe
 from graphical_objects.objeto3d import Object3D
 from graphical_objects.ponto3d import Ponto3D
+from graphical_objects.surfaces3d import BezierSurface
 import constants as c
 
 class GraphicalObjectFactory:
@@ -14,10 +15,11 @@ class GraphicalObjectFactory:
                 "Wireframe": Wireframe,
                 "3DObject": Object3D,
                 "3DPoint": Ponto3D,
+                "BezierSurface": BezierSurface
             }
 
     @staticmethod
-    def create_object(object_type: str, name: str, object_id: int, coordinates: tuple, color: str, fill: bool, curve_type: str):
+    def create_object(object_type: str, name: str, object_id: int, coordinates: tuple, color: str, fill: bool, curve_type: str, surface_type: str):
 
         if (isinstance(object_type, AbstractGraphicalObject)):
             GraphicalObjectFactory.duplicate_object(object_type, name, object_id)
@@ -31,6 +33,10 @@ class GraphicalObjectFactory:
                 return BSplineCurve(name, object_id, coordinates, color, fill)
             else:
                 raise ValueError(f"tipo de curva desconhecido: {curve_type}")
+        
+        if (object_type == "Surface"):
+            obj_class = GraphicalObjectFactory.object_classes[surface_type]
+            return obj_class(name, object_id, coordinates, color, fill)
     
         if object_type in GraphicalObjectFactory.object_classes:
             obj_class = GraphicalObjectFactory.object_classes[object_type]

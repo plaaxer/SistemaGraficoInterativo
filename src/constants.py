@@ -3,6 +3,7 @@
 DEFAULT_SELECTED_OBJECT = "Point"
 POSSIBLE_OBJECTS = ["Point", "Line", "Wireframe", "Curve", "3DObject"]
 AVAILABLE_CURVES = ["Bezier", "B-Spline"]
+AVAILABLE_SURFACES = ["BezierSurface"]
 
 CURVE_TYPE_BEZIER = "Bezier"
 CURVE_TYPE_BSPLINE = "B-Spline"

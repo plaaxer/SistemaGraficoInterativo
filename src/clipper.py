@@ -278,9 +278,9 @@ class Clipper:
                         code2 = self.compute_cohen_sutherland_code(x2, y2, x_min, x_max, y_min, y_max)
 
             if accept:
-                print(f"Line {i} accepted: ({x1:.3f}, {y1:.3f}) -> ({x2:.3f}, {y2:.3f})")
+                #print(f"Line {i} accepted: ({x1:.3f}, {y1:.3f}) -> ({x2:.3f}, {y2:.3f})")
                 segments[i] = [(x1, y1), (x2, y2)]
                 object3d.in_window[i] = True
             else:
-                print(f"Line {i} rejected: ({x1:.3f}, {y1:.3f}) -> ({x2:.3f}, {y2:.3f})")
+                #print(f"Line {i} rejected: ({x1:.3f}, {y1:.3f}) -> ({x2:.3f}, {y2:.3f})")
                 object3d.in_window[i] = False

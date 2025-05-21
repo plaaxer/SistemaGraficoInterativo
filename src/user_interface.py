@@ -147,15 +147,18 @@ class UserInterface(tk.Tk):
         x = self.winfo_x() + (self.winfo_width() // 2) - (c.POPUP_WIDTH // 2)
         y = self.winfo_y() + (self.winfo_height() // 2) - (c.POPUP_HEIGHT // 2)
         popup.geometry(f"+{x}+{y - c.POPUP_Y_OFFSET}")
+
         tk.Label(popup, text="Select Object Type:").pack(pady=5)
         obj_type_var = tk.StringVar(popup)
         obj_type_var.set(c.DEFAULT_SELECTED_OBJECT)
-        obj_types = c.POSSIBLE_OBJECTS
+        obj_types = c.POSSIBLE_OBJECTS + ["Surface"]  # Add "Surface" to the list
         obj_menu = tk.OptionMenu(popup, obj_type_var, *obj_types)
         obj_menu.pack(pady=5)
+
         tk.Label(popup, text="Enter Coordinates:").pack(pady=5)
         coord_entry = tk.Entry(popup, width=50)
         coord_entry.pack(pady=5)
+
         color_name_frame = tk.Frame(popup)
         color_name_frame.pack(pady=5, anchor="center", padx=10)
         tk.Label(color_name_frame, text="Color (optional):").grid(row=0, column=0, padx=5)
@@ -164,20 +167,25 @@ class UserInterface(tk.Tk):
         tk.Label(color_name_frame, text="Name (optional):").grid(row=0, column=2, padx=5)
         name_entry = tk.Entry(color_name_frame, width=15)
         name_entry.grid(row=0, column=3, padx=5)
-        
+
         fill_frame = tk.Frame(popup)
         fill_var = tk.BooleanVar()
         fill_check = tk.Checkbutton(fill_frame, text="Fill Wireframe", variable=fill_var)
-        
+
         curve_frame = tk.Frame(popup)
         curve_type_var = tk.StringVar(popup)
-        curve_type_var.set(c.AVAILABLE_CURVES[1])  # Default to first curve type
-        
+        curve_type_var.set(c.AVAILABLE_CURVES[1])
+
+        surface_frame = tk.Frame(popup)
+        surface_type_var = tk.StringVar(popup)
+        surface_type_var.set(c.AVAILABLE_SURFACES[0])
+
         def update_ui_options(*args):
             fill_frame.pack_forget()
             fill_check.pack_forget()
             curve_frame.pack_forget()
-            
+            surface_frame.pack_forget()
+
             selected = obj_type_var.get().lower()
             if selected == "wireframe":
                 fill_frame.pack(pady=5)
@@ -187,26 +195,34 @@ class UserInterface(tk.Tk):
                 tk.Label(curve_frame, text="Curve Type:").pack(side=tk.LEFT, padx=5)
                 curve_menu = tk.OptionMenu(curve_frame, curve_type_var, *c.AVAILABLE_CURVES)
                 curve_menu.pack(side=tk.LEFT, padx=5)
-        
+            elif selected == "surface":
+                surface_frame.pack(pady=5)
+                tk.Label(surface_frame, text="Surface Type:").pack(side=tk.LEFT, padx=5)
+                surface_menu = tk.OptionMenu(surface_frame, surface_type_var, *c.AVAILABLE_SURFACES)
+                surface_menu.pack(side=tk.LEFT, padx=5)
+
         obj_type_var.trace_add("write", update_ui_options)
         update_ui_options()
-        
+
         def create_object():
             obj_type = obj_type_var.get()
             coords = coord_entry.get()
             color = color_entry.get()
             name = name_entry.get()
-            
+
             options = {}
             if obj_type.lower() == "wireframe":
                 options["fill"] = fill_var.get()
             elif obj_type.lower() == "curve":
                 options["curve_type"] = curve_type_var.get()
-            
+            elif obj_type.lower() == "surface":
+                options["surface_type"] = surface_type_var.get()
+
             self._app.create_object(obj_type, coords, name, color, **options)
             popup.destroy()
-        
+
         tk.Button(popup, text="Create", command=create_object).pack(pady=10)
+
     
     def switch_clipping_algorithm(self):
         self._app.switch_clipping_algorithm()
@@ -305,6 +321,19 @@ class UserInterface(tk.Tk):
 #     "blue"
 # )
         #600, 300, 300
+
+        large_test_points = (
+    "(100, 100, 100), (300, 100, 200), (700, 100, 150), (900, 100, 100), (100, 300, 200), (300, 300, 400), (700, 300, 350), (900, 300, 200), (100, 700, 150), (300, 700, 350), (700, 700, 300), (900, 700, 150), (100, 900, 100),    (300, 900, 200), (700, 900, 150),(900, 900, 100)"
+        )
+        
+
+        self._app.create_object(
+            "Surface",
+            large_test_points,
+            "superficieBezier",
+            "green",
+
+        )
         new_cube_coordinates = (
 
     "(600, 600, 600), (900, 600, 600), "
@@ -324,11 +353,16 @@ class UserInterface(tk.Tk):
     "(900, 900, 600), (900, 900, 300), "
     "(600, 900, 600), (600, 900, 300)"
 )
+        options = {}
+
+        options["surface_type"] = "BezierSurface"
+
         self._app.create_object(
             "3DObject",
             new_cube_coordinates,
             "newCube",
-            "red"
+            "red",
+            **options
         )
         #         # Define the coordinates for the edges of the new rectangular prism
         # # Each pair of coordinates represents a segment (an edge)

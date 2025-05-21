@@ -25,6 +25,8 @@ class Renderer:
         print("Starting recompute...")
 
         cop_translation = self.translation_matrix(-self._cop.x, -self._cop.y, -self._cop.z)
+
+        print(f"Current camera location: {self._cop}")
         
         pitch, yaw, roll = self.extract_angles_from_vector(self._viewport.vpn, self._viewport.vup)
 
@@ -142,7 +144,7 @@ class Renderer:
 
         point_2d = (clipped_point[0], clipped_point[1])
 
-        print(f"Point 2D after projection: {point_2d[0]:.3f}, {point_2d[1]:.3f}")
+        #print(f"Point 2D after projection: {point_2d[0]:.3f}, {point_2d[1]:.3f}")
 
         return point_2d
 

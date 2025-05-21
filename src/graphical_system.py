@@ -31,12 +31,19 @@ class GraphicalSystem:
         if color == "" or color is None:
             color = c.DEFAULT_OBJECT_COLOR
 
+        print(options)
+
         # argumentos adicionais
         fill = options.get("fill", False)
         curve_type = options.get("curve_type", None)
+        surface_type = options.get("surface_type", None)
 
         if curve_type is None and obj_type == "Curve":
             self._ui.display_error("Tipo de curva não especificado")
+            return
+        
+        if surface_type is None and obj_type == "Surface":
+            self._ui.display_error("Tipo de superfície não especificado")
             return
 
         #processa coordenadas
@@ -46,9 +53,21 @@ class GraphicalSystem:
             self._ui.display_error(str(e))
             return
 
-        #instancia objeto utilizando factory
-        obj = GraphicalObjectFactory.create_object(obj_type, name, self._unique_id, coords, color, fill=fill, curve_type=curve_type)
+        # instancia objeto utilizando factory com parâmetros em um dicionário
+        params = {
+            "object_type": obj_type,
+            "name": name,
+            "object_id": self._unique_id,
+            "coordinates": coords,
+            "color": color,
+            "fill": fill,
+            "curve_type": curve_type,
+            "surface_type": surface_type
+        }
+
+        obj = GraphicalObjectFactory.create_object(**params)
         self._unique_id += 1
+
 
         #adiciona objeto à display file
         self._viewport.display_file.add_object(obj)
