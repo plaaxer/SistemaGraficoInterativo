@@ -8,21 +8,10 @@ class BezierSurface(Object3D):
         super().__init__(name, id, coordinates, color, fill)
     
     def generate(self, points):
-        """
-        Generate coordinates for a Bezier surface from control points.
-        Takes a list of points in the format [(x0,y0,z0), (x1,y1,z1), ...] and returns
-        a list of line segments between adjacent points in the determined order.
-        
-        Args:
-            points: List of (x,y,z) tuples representing control points
-            
-        Returns:
-            List of coordinates defining the surface's line segments
-        """
-        if len(points) < 16:  # Need at least 4x4 control points
+
+        if len(points) < 16:
             return points
-        
-        # Define Bezier matrix
+
         M = np.array([
             [-1,  3, -3, 1],
             [ 3, -6,  3, 0],
@@ -32,10 +21,11 @@ class BezierSurface(Object3D):
         
         Mt = M.transpose()
         segments = []
-        step = 0.05  # Sampling density
+        step = 0.05
         
-        # Process control points in 4x4 patches
-        for i in range(0, len(points) - 15, 16):  # Adjusted to process 16 points at a time
+        # 4 em 4
+        for i in range(0, len(points) - 15, 16):
+            
             # Extract control points for this patch
             patch_points = points[i:i+16]
             
@@ -52,7 +42,6 @@ class BezierSurface(Object3D):
                     Gy[r, c] = patch_points[idx][1]  # y coordinate
                     Gz[r, c] = patch_points[idx][2]  # z coordinate
             
-            # Generate surface points
             surface_points = []
             s_values = np.arange(0, 1 + step, step)
             
@@ -74,7 +63,6 @@ class BezierSurface(Object3D):
                 
                 surface_points.append(row_points)
             
-            # Create line segments for this patch
             for r in range(len(surface_points)):
                 for c in range(len(surface_points[0]) - 1):
                     # Horizontal segments
@@ -85,7 +73,6 @@ class BezierSurface(Object3D):
                     # Vertical segments
                     segments.append((surface_points[r][c], surface_points[r+1][c]))
         
-        # Flatten segments into coordinates list
         coordinates = []
         for start, end in segments:
             coordinates.extend([start, end])
