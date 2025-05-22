@@ -46,39 +46,43 @@ class Viewport(Canvas):
 
         return viewport_x, viewport_y
     
-    def translate_window(self, dwx, dwy, dwz=0):
+    # def translate_window(self, dwx, dwy, dwz=0):
 
-        vpn = np.array([self.vpn[0], self.vpn[1], self.vpn[2]])
-        vup = np.array([self.vup[0], self.vup[1], self.vup[2]])
+    #     vpn = np.array([self.vpn[0], self.vpn[1], self.vpn[2]])
+    #     vup = np.array([self.vup[0], self.vup[1], self.vup[2]])
         
-        vpn = vpn / np.linalg.norm(vpn)
-        vup = vup / np.linalg.norm(vup)
+    #     vpn = vpn / np.linalg.norm(vpn)
+    #     vup = vup / np.linalg.norm(vup)
         
-        right_vector = np.cross(vpn, vup)
-        right_vector = right_vector / np.linalg.norm(right_vector)
+    #     right_vector = np.cross(vpn, vup)
+    #     right_vector = right_vector / np.linalg.norm(right_vector)
         
-        vup = np.cross(right_vector, vpn)
-        vup = vup / np.linalg.norm(vup)
+    #     vup = np.cross(right_vector, vpn)
+    #     vup = vup / np.linalg.norm(vup)
 
-        world_translation = right_vector * dwx + vup * dwy + vpn * dwz
+    #     world_translation = right_vector * dwx + vup * dwy + vpn * dwz
         
-        world_dx, world_dy, world_dz = world_translation
+    #     world_dx, world_dy, world_dz = world_translation
         
-        x_min, y_min = self.window_bounds[0]
-        x_max, y_max = self.window_bounds[1]
-        x_min += world_dx
-        y_min += world_dy
-        x_max += world_dx
-        y_max += world_dy
-        self.window_bounds[0] = (x_min, y_min)
-        self.window_bounds[1] = (x_max, y_max)
+    #     x_min, y_min = self.window_bounds[0]
+    #     x_max, y_max = self.window_bounds[1]
+    #     x_min += world_dx
+    #     y_min += world_dy
+    #     x_max += world_dx
+    #     y_max += world_dy
+    #     self.window_bounds[0] = (x_min, y_min)
+    #     self.window_bounds[1] = (x_max, y_max)
         
-        self.vrp[0] += world_dx
-        self.vrp[1] += world_dy
-        self.vrp[2] += world_dz
+    #     self.vrp[0] += world_dx
+    #     self.vrp[1] += world_dy
+    #     self.vrp[2] += world_dz
         
-        self.renderer.translate_cop(world_dx, world_dy, world_dz)
+    #     self.renderer.translate_cop(dwx, dwy, dwz)
         
+    #     self.update()
+
+    def translate_window(self, dx, dy, dz=0):
+        self.renderer.translate_window(dx, dy, dz)
         self.update()
 
 

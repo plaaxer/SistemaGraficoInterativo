@@ -100,7 +100,7 @@ class Renderer:
             if self._3dperspective == c.PARALLEL_PROJECTION:
                 updated_segment = self.align_z_axis(updated_segment)
 
-            segments.append(self.normalize(updated_segment))
+            segments.append(self.normalize_vertices(updated_segment))
 
         obj.set_normalized_segments(segments)
 
@@ -178,7 +178,7 @@ class Renderer:
 
         return translated_back
 
-    def normalize(self, vertices):
+    def normalize_vertices(self, vertices):
         x_min, y_min = self._viewport.window_bounds[0][:2]
         x_max, y_max = self._viewport.window_bounds[1][:2]
 
@@ -386,3 +386,32 @@ class Renderer:
             [0, 0, 1, dz],
             [0, 0, 0, 1]
         ], dtype=float)
+    
+    def _normalize(self, v):
+        norm = np.linalg.norm(v)
+        if norm == 0:
+            return v
+        return v / norm
+    
+    def translate_window(self, dx, dy, dz):
+
+        vpn_vec = np.array(self._viewport.vpn, dtype=float)
+        vup_vec = np.array(self._viewport.vup, dtype=float)
+
+        gaze_direction_world = self._normalize(vpn_vec)
+        print("gaze direction", gaze_direction_world)
+
+        right_direction_world = self._normalize(np.cross(vup_vec, gaze_direction_world))
+        print("right direction", right_direction_world)
+
+        up_direction_world = self._normalize(np.cross(gaze_direction_world, right_direction_world))
+        
+        displacement_world = (dx * right_direction_world +
+                              dy * up_direction_world +
+                              dz * gaze_direction_world)
+        
+        print("world displacement: ")
+
+        self._cop.x += displacement_world[0]
+        self._cop.y += displacement_world[1]
+        self._cop.z += displacement_world[2]

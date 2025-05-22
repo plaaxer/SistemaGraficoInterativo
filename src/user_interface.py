@@ -281,13 +281,13 @@ class UserInterface(tk.Tk):
     
     def move_left(self):
         step = 100
-        self.viewport.translate_window(step, 0)
+        self.viewport.translate_window(-step, 0)
         self.viewport.update()
         self.log_message(f"Moved left by {step} pixels")
     
     def move_right(self):
         step = 100
-        self.viewport.translate_window(-step, 0)
+        self.viewport.translate_window(step, 0)
         self.viewport.update()
         self.log_message(f"Moved right by {step} pixels")
 
@@ -326,12 +326,16 @@ class UserInterface(tk.Tk):
     "(100, 100, 100), (300, 100, 200), (700, 100, 150), (900, 100, 100), (100, 300, 200), (300, 300, 400), (700, 300, 350), (900, 300, 200), (100, 700, 150), (300, 700, 350), (700, 700, 300), (900, 700, 150), (100, 900, 100),    (300, 900, 200), (700, 900, 150),(900, 900, 100)"
         )
         
+        options = {}
+
+        options["surface_type"] = "BezierSurface"
 
         self._app.create_object(
             "Surface",
             large_test_points,
             "superficieBezier",
             "green",
+            **options
 
         )
         new_cube_coordinates = (
@@ -353,16 +357,13 @@ class UserInterface(tk.Tk):
     "(900, 900, 600), (900, 900, 300), "
     "(600, 900, 600), (600, 900, 300)"
 )
-        options = {}
 
-        options["surface_type"] = "BezierSurface"
 
         self._app.create_object(
             "3DObject",
             new_cube_coordinates,
             "newCube",
-            "red",
-            **options
+            "red"
         )
         #         # Define the coordinates for the edges of the new rectangular prism
         # # Each pair of coordinates represents a segment (an edge)
@@ -396,26 +397,26 @@ class UserInterface(tk.Tk):
         # )
         # Define the coordinates for the edges of a tetrahedron
 # Each pair of coordinates represents a segment (an edge)
-        new_tetrahedron_coordinates = (
-            # Base triangle edges (on the XY plane for simplicity)
-            "(100, 100, 0), (400, 100, 0), "
-            "(400, 100, 0), (250, 350, 0), "
-            "(250, 350, 0), (100, 100, 0), "
+        # new_tetrahedron_coordinates = (
+        #     # Base triangle edges (on the XY plane for simplicity)
+        #     "(100, 100, 0), (400, 100, 0), "
+        #     "(400, 100, 0), (250, 350, 0), "
+        #     "(250, 350, 0), (100, 100, 0), "
 
-            # Edges connecting base vertices to the apex
-            "(100, 100, 0), (250, 200, 400), " # Connect base vertex 1 to apex
-            "(400, 100, 0), (250, 200, 400), " # Connect base vertex 2 to apex
-            "(250, 350, 0), (250, 200, 400)"  # Connect base vertex 3 to apex
-        )
+        #     # Edges connecting base vertices to the apex
+        #     "(100, 100, 0), (250, 200, 400), " # Connect base vertex 1 to apex
+        #     "(400, 100, 0), (250, 200, 400), " # Connect base vertex 2 to apex
+        #     "(250, 350, 0), (250, 200, 400)"  # Connect base vertex 3 to apex
+        # )
 
-        # Assuming self._app is your application object with a create_object method
-        # Create the new 3D object using the defined coordinates
-        self._app.create_object(
-            "3DObject",           # Object type
-            new_tetrahedron_coordinates, # The coordinates defining the segments
-            "newTetrahedron",     # A name for the object
-            "green"               # The color of the object
-        )
+        # # Assuming self._app is your application object with a create_object method
+        # # Create the new 3D object using the defined coordinates
+        # self._app.create_object(
+        #     "3DObject",           # Object type
+        #     new_tetrahedron_coordinates, # The coordinates defining the segments
+        #     "newTetrahedron",     # A name for the object
+        #     "green"               # The color of the object
+        # )
 
 
     def zoom_in(self):

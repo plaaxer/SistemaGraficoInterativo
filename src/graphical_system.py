@@ -31,7 +31,7 @@ class GraphicalSystem:
         if color == "" or color is None:
             color = c.DEFAULT_OBJECT_COLOR
 
-        print(options)
+        print("FKING OPTIONS", options)
 
         # argumentos adicionais
         fill = options.get("fill", False)

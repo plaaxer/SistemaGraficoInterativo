@@ -26,15 +26,12 @@ class BezierSurface(Object3D):
         # 4 em 4
         for i in range(0, len(points) - 15, 16):
             
-            # Extract control points for this patch
             patch_points = points[i:i+16]
             
-            # Create coordinate matrices for x, y, z
             Gx = np.zeros((4, 4))
             Gy = np.zeros((4, 4))
             Gz = np.zeros((4, 4))
             
-            # Fill the matrices with control point coordinates
             for r in range(4):
                 for c in range(4):
                     idx = r * 4 + c
@@ -54,7 +51,6 @@ class BezierSurface(Object3D):
                     T = np.array([t**3, t**2, t, 1]).reshape(4, 1)
                     Mt_T = Mt @ T
                     
-                    # Calculate point coordinates
                     x = S_M @ Gx @ Mt_T
                     y = S_M @ Gy @ Mt_T
                     z = S_M @ Gz @ Mt_T
@@ -65,12 +61,12 @@ class BezierSurface(Object3D):
             
             for r in range(len(surface_points)):
                 for c in range(len(surface_points[0]) - 1):
-                    # Horizontal segments
+                    # Horizontal
                     segments.append((surface_points[r][c], surface_points[r][c+1]))
             
             for c in range(len(surface_points[0])):
                 for r in range(len(surface_points) - 1):
-                    # Vertical segments
+                    # Vertical
                     segments.append((surface_points[r][c], surface_points[r+1][c]))
         
         coordinates = []
